@@ -102,22 +102,30 @@ Format:
 ]
 Search today's date for each source. If a bank's rate is not publicly findable, use null for rate and note it in raw_snippet.`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': CONFIG.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'interleaved-thinking-2025-05-14',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 60000);
+
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CONFIG.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errText = await response.text();
@@ -650,72 +658,86 @@ function setupRefreshButton() {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+function setErrorBanner(msg) {
+  const el = document.getElementById('banner-error');
+  if (el) el.innerHTML = `✕ ${msg}`;
+  showBanner('banner-error');
+}
+
 async function init() {
-  initSupabase();
-  setupFilterSort();
-  setupCalculatorListeners();
-  setupRefreshButton();
+  try {
+    initSupabase();
+    setupFilterSort();
+    setupCalculatorListeners();
+    setupRefreshButton();
 
-  showSkeletonFed();
-  showSkeletonGrid();
-  hideBanners();
+    showSkeletonFed();
+    showSkeletonGrid();
+    hideBanners();
 
-  let rows = null;
-  let prevFedRow = null;
+    let rows = null;
+    let prevFedRow = null;
 
-  // 1. Try Supabase
-  rows = await fetchFromSupabase();
-  state.rateRows = rows || [];
+    // 1. Try Supabase
+    console.log('[MR] querying Supabase...');
+    rows = await fetchFromSupabase();
+    console.log('[MR] Supabase:', rows ? rows.length + ' rows' : 'null/empty');
+    state.rateRows = rows || [];
 
-  if (rows && rows.length > 0) {
-    // Fetch previous fed row for direction badge
-    if (supabase) {
-      try {
-        const { data: prevFed } = await supabase
-          .from('rate_snapshots')
-          .select('*')
-          .eq('source', 'fed')
-          .order('fetched_at', { ascending: false })
-          .range(1, 1);   // second most recent
-        if (prevFed && prevFed.length > 0) prevFedRow = prevFed[0];
-      } catch (_) {}
-    }
-  }
-
-  // 2. Check freshness
-  const latestTs = rows && rows[0]?.fetched_at;
-  const cacheHit = latestTs && !isStale(latestTs);
-
-  if (cacheHit) {
-    // Fresh cache — render immediately
-    await renderAll(rows, prevFedRow);
-  } else {
-    // Stale or empty — fetch from Claude
-    try {
-      const freshRows = await fetchFromClaude();
-      await insertToSupabase(freshRows);
-      // Re-read from Supabase to get DB timestamps + IDs
-      const dbRows = await fetchFromSupabase();
-      rows = dbRows || freshRows.map(r => ({ ...r, fetched_at: new Date().toISOString() }));
-      state.rateRows = rows;
-      await renderAll(rows, prevFedRow);
-    } catch (e) {
-      console.warn('Claude fetch failed:', e.message);
-
-      if (rows && rows.length > 0) {
-        // Stale data available
-        showBanner('banner-warning');
-        state.usingStale = true;
-        await renderAll(rows, prevFedRow);
-      } else {
-        // Nothing — use hardcoded fallback
-        showBanner('banner-error');
-        state.usingFallback = true;
-        const fallback = FALLBACK_RATES.map(r => ({ ...r, fetched_at: null }));
-        state.rateRows = fallback;
-        await renderAll(fallback, null);
+    if (rows && rows.length > 0) {
+      if (supabase) {
+        try {
+          const { data: prevFed } = await supabase
+            .from('rate_snapshots')
+            .select('*')
+            .eq('source', 'fed')
+            .order('fetched_at', { ascending: false })
+            .range(1, 1);
+          if (prevFed && prevFed.length > 0) prevFedRow = prevFed[0];
+        } catch (_) {}
       }
     }
+
+    // 2. Check freshness
+    const latestTs = rows && rows[0]?.fetched_at;
+    const cacheHit = latestTs && !isStale(latestTs);
+    console.log('[MR] cache hit:', cacheHit);
+
+    if (cacheHit) {
+      await renderAll(rows, prevFedRow);
+    } else {
+      // Stale or empty — fetch from Claude
+      try {
+        console.log('[MR] starting Claude API fetch...');
+        const freshRows = await fetchFromClaude();
+        console.log('[MR] Claude returned', freshRows.length, 'rows');
+        await insertToSupabase(freshRows);
+        const dbRows = await fetchFromSupabase();
+        rows = dbRows || freshRows.map(r => ({ ...r, fetched_at: new Date().toISOString() }));
+        state.rateRows = rows;
+        await renderAll(rows, prevFedRow);
+      } catch (e) {
+        console.error('[MR] Claude fetch failed:', e);
+        if (rows && rows.length > 0) {
+          setErrorBanner('Live fetch failed — showing last known rates. (' + e.message + ')');
+          state.usingStale = true;
+          await renderAll(rows, prevFedRow);
+        } else {
+          setErrorBanner('Could not fetch live rates (' + e.message + '). Showing reference values — visit each lender for current quotes.');
+          state.usingFallback = true;
+          const fallback = FALLBACK_RATES.map(r => ({ ...r, fetched_at: null }));
+          state.rateRows = fallback;
+          await renderAll(fallback, null);
+        }
+      }
+    }
+  } catch (fatalErr) {
+    console.error('[MR] Fatal init error:', fatalErr);
+    setErrorBanner('App failed to start: ' + fatalErr.message);
+    try {
+      const fallback = FALLBACK_RATES.map(r => ({ ...r, fetched_at: null }));
+      await renderAll(fallback, null);
+    } catch (_) {}
   }
 }
 
