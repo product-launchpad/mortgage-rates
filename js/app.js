@@ -109,6 +109,7 @@ Search today's date for each source. If a bank's rate is not publicly findable, 
       'x-api-key': CONFIG.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',
       'anthropic-beta': 'interleaved-thinking-2025-05-14',
+      'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',

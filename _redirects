@@ -1,1 +1,2 @@
-/* /index.html 200
+# Cloudflare Pages serves index.html automatically for unmatched paths.
+# No explicit SPA redirect needed — removing it eliminates the infinite loop warning.
