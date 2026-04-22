@@ -9,12 +9,13 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-# Cache static assets aggressively (fingerprinted by Cloudflare CDN)
+# Cloudflare Pages serves files at literal paths (no content hashing),
+# so JS/CSS must not be cached immutably — they change on every deploy.
 /css/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=3600
 
 /js/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 # SEO / crawler files: short cache so updates propagate quickly
 /robots.txt
