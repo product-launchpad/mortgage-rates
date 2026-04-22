@@ -15,13 +15,18 @@ const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const FALLBACK_RATES = [
   { source: 'fed',            label: 'Fed Funds Rate',   rate: 4.33, term_type: 'fed',  bank_url: 'https://www.federalreserve.gov/releases/h15/' },
-  { source: 'freddie_mac',    label: '30-yr Fixed Avg',  rate: 6.89, term_type: '30yr', bank_url: 'https://www.freddiemac.com/pmms' },
-  { source: 'freddie_mac_15', label: '15-yr Fixed Avg',  rate: 6.17, term_type: '15yr', bank_url: 'https://www.freddiemac.com/pmms' },
-  { source: 'chase',          label: '30-yr Fixed',      rate: 7.12, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
-  { source: 'wells_fargo',    label: '30-yr Fixed',      rate: 7.24, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
+  // freddie_mac kept for calculator pre-fill reference — not shown in grid
+  { source: 'freddie_mac',    label: '30-yr Fixed Avg',  rate: 6.30, term_type: '30yr', bank_url: 'https://www.freddiemac.com/pmms' },
+  { source: 'freddie_mac_15', label: '15-yr Fixed Avg',  rate: 5.65, term_type: '15yr', bank_url: 'https://www.freddiemac.com/pmms' },
+  // 9 displayed lenders
+  { source: 'chase',          label: '30-yr Fixed',      rate: 6.99, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
+  { source: 'wells_fargo',    label: '30-yr Fixed',      rate: 7.12, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
   { source: 'bank_of_america',label: '30-yr Fixed',      rate: 7.05, term_type: '30yr', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
-  { source: 'citi',           label: '30-yr Fixed',      rate: 6.99, term_type: '30yr', bank_url: 'https://www.citimortgage.com/mortgage/mortgage-rates' },
-  { source: 'rocket_mortgage',label: '30-yr Fixed',      rate: 7.31, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
+  { source: 'rocket_mortgage',label: '30-yr Fixed',      rate: 7.25, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
+  { source: 'loan_depot',     label: '30-yr Fixed',      rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
+  { source: 'sage_home_loans',label: '30-yr Fixed',      rate: 6.87, term_type: '30yr', bank_url: 'https://sagehomeloans.com/mortgage-rates' },
+  { source: 'navy_federal',   label: '30-yr Fixed',      rate: 6.75, term_type: '30yr', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
+  { source: 'pnc_bank',       label: '30-yr Fixed',      rate: 7.10, term_type: '30yr', bank_url: 'https://www.pnc.com/en/personal-banking/borrowing/mortgage.html' },
   { source: 'us_bank',        label: '30-yr Fixed',      rate: 7.08, term_type: '30yr', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
 ];
 
@@ -91,16 +96,19 @@ Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
 Format:
 [
   { "source": "fed", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
-  { "source": "freddie_mac", "label": "30-yr Fixed Avg", "rate": 6.89, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "freddie_mac_15", "label": "15-yr Fixed Avg", "rate": 6.17, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "chase", "label": "30-yr Fixed", "rate": 7.12, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "wells_fargo", "label": "30-yr Fixed", "rate": 7.24, "term_type": "30yr", "bank_url": "https://www.wellsfargo.com/mortgage/rates/", "raw_snippet": "..." },
+  { "source": "freddie_mac", "label": "30-yr Fixed Avg", "rate": 6.30, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "freddie_mac_15", "label": "15-yr Fixed Avg", "rate": 5.65, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "chase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "wells_fargo", "label": "30-yr Fixed", "rate": 7.12, "term_type": "30yr", "bank_url": "https://www.wellsfargo.com/mortgage/rates/", "raw_snippet": "..." },
   { "source": "bank_of_america", "label": "30-yr Fixed", "rate": 7.05, "term_type": "30yr", "bank_url": "https://www.bankofamerica.com/mortgage/mortgage-rates/", "raw_snippet": "..." },
-  { "source": "citi", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.citimortgage.com/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "rocket_mortgage", "label": "30-yr Fixed", "rate": 7.31, "term_type": "30yr", "bank_url": "https://www.rocketmortgage.com/mortgage-rates", "raw_snippet": "..." },
+  { "source": "rocket_mortgage", "label": "30-yr Fixed", "rate": 7.25, "term_type": "30yr", "bank_url": "https://www.rocketmortgage.com/mortgage-rates", "raw_snippet": "..." },
+  { "source": "loan_depot", "label": "30-yr Fixed", "rate": 7.18, "term_type": "30yr", "bank_url": "https://www.loandepot.com/mortgage-rates", "raw_snippet": "..." },
+  { "source": "sage_home_loans", "label": "30-yr Fixed", "rate": 6.87, "term_type": "30yr", "bank_url": "https://sagehomeloans.com/mortgage-rates", "raw_snippet": "..." },
+  { "source": "navy_federal", "label": "30-yr Fixed", "rate": 6.75, "term_type": "30yr", "bank_url": "https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/", "raw_snippet": "..." },
+  { "source": "pnc_bank", "label": "30-yr Fixed", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.pnc.com/en/personal-banking/borrowing/mortgage.html", "raw_snippet": "..." },
   { "source": "us_bank", "label": "30-yr Fixed", "rate": 7.08, "term_type": "30yr", "bank_url": "https://www.usbank.com/home-loans/mortgage/mortgage-rates.html", "raw_snippet": "..." }
 ]
-Search today's date for each source. If a bank's rate is not publicly findable, use null for rate and note it in raw_snippet.`;
+Search today's date for each source. If a rate is not publicly available, use null and note it in raw_snippet.`;
 
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 60000);
@@ -189,6 +197,10 @@ function formatSourceName(source) {
     bank_of_america: 'Bank of America',
     citi:            'Citi',
     rocket_mortgage: 'Rocket Mortgage',
+    loan_depot:      'loanDepot',
+    sage_home_loans: 'Sage Home Loans',
+    navy_federal:    'Navy Federal',
+    pnc_bank:        'PNC Bank',
     us_bank:         'U.S. Bank',
   };
   return map[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -237,7 +249,7 @@ function showSkeletonFed() {
 
 function showSkeletonGrid() {
   const grid = document.getElementById('rates-grid');
-  grid.innerHTML = Array(8).fill(0).map(() => `
+  grid.innerHTML = Array(9).fill(0).map(() => `
     <div class="skeleton-card">
       <div style="display:flex;justify-content:space-between">
         <div class="skeleton skel-line" style="width:55%"></div>
@@ -410,7 +422,9 @@ async function renderAll(rows, prevFedRow) {
   if (!rows || rows.length === 0) return;
 
   const fedRow  = rows.find(r => r.source === 'fed') || null;
-  const bankRows = rows.filter(r => r.source !== 'fed');
+  // Freddie Mac excluded from grid — used only for calculator pre-fill reference
+  const HIDDEN = new Set(['fed', 'freddie_mac', 'freddie_mac_15']);
+  const bankRows = rows.filter(r => !HIDDEN.has(r.source));
 
   state.fedRow  = fedRow;
   state.bankRows = bankRows;
