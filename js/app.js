@@ -325,6 +325,9 @@ function renderRateCards(rows) {
       formatSourceName(a.source).localeCompare(formatSourceName(b.source)));
   }
 
+  // Hard cap — never show more than 9 tiles
+  filtered = filtered.slice(0, 9);
+
   grid.innerHTML = filtered.map(row => {
     const barPct  = row.rate != null ? Math.round((Number(row.rate) / maxRate) * 100) : 0;
     const isNatAvg = row.source === 'freddie_mac' || row.source === 'freddie_mac_15';
@@ -422,9 +425,13 @@ async function renderAll(rows, prevFedRow) {
   if (!rows || rows.length === 0) return;
 
   const fedRow  = rows.find(r => r.source === 'fed') || null;
-  // Freddie Mac excluded from grid — used only for calculator pre-fill reference
-  const HIDDEN = new Set(['fed', 'freddie_mac', 'freddie_mac_15']);
-  const bankRows = rows.filter(r => !HIDDEN.has(r.source));
+  // Explicit allowlist — Freddie Mac kept in rows[] for calculator pre-fill but not displayed.
+  // Null-rate rows removed so blank tiles never appear.
+  const DISPLAY_SOURCES = new Set([
+    'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
+    'loan_depot', 'sage_home_loans', 'navy_federal', 'pnc_bank', 'us_bank',
+  ]);
+  const bankRows = rows.filter(r => DISPLAY_SOURCES.has(r.source) && r.rate != null);
 
   state.fedRow  = fedRow;
   state.bankRows = bankRows;
