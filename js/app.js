@@ -466,97 +466,65 @@ function calcMonthlyPI(principal, annualRate, termMonths) {
   return principal * r * Math.pow(1 + r, termMonths) / (Math.pow(1 + r, termMonths) - 1);
 }
 
-function buildAmortSchedule(principal, annualRate, termMonths) {
-  const r = annualRate / 100 / 12;
-  let balance = principal;
-  const schedule = [];
-  for (let i = 0; i < termMonths; i++) {
-    const interest  = balance * r;
-    const payment   = calcMonthlyPI(principal, annualRate, termMonths);
-    const prinPart  = payment - interest;
-    balance        -= prinPart;
-    schedule.push({ interest, principal: prinPart, balance: Math.max(balance, 0) });
-  }
-  return schedule;
-}
-
-// ─── CALCULATOR: amortization chart (Canvas) ────────────────────────────────
-function drawAmortChart(schedule, termYears) {
+// ─── CALCULATOR: donut chart (Canvas) ───────────────────────────────────────
+function drawDonutChart(piAmount, taxAmount, insAmount) {
   const canvas = document.getElementById('amort-canvas');
   if (!canvas) return;
 
-  const intervals = [];
-  const yearsPerBar = termYears <= 15 ? 1 : 5;
-  const monthsPerBar = yearsPerBar * 12;
+  const total = piAmount + taxAmount + insAmount;
+  if (total <= 0) return;
 
-  for (let i = 0; i < schedule.length; i += monthsPerBar) {
-    const slice = schedule.slice(i, i + monthsPerBar);
-    const totalPrin = slice.reduce((s, m) => s + m.principal, 0);
-    const totalInt  = slice.reduce((s, m) => s + m.interest, 0);
-    intervals.push({ label: `Yr ${Math.floor(i / 12) + yearsPerBar}`, principal: totalPrin, interest: totalInt });
-  }
-
-  const dpr   = window.devicePixelRatio || 1;
-  const W     = canvas.offsetWidth || 480;
-  const H     = 180;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.height = H + 'px';
+  const dpr  = window.devicePixelRatio || 1;
+  const SIZE = 180;
+  canvas.width  = SIZE * dpr;
+  canvas.height = SIZE * dpr;
+  canvas.style.width  = SIZE + 'px';
+  canvas.style.height = SIZE + 'px';
 
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, SIZE, SIZE);
 
-  const padL = 52, padR = 12, padT = 12, padB = 28;
-  const chartW = W - padL - padR;
-  const chartH = H - padT - padB;
+  const cx = SIZE / 2, cy = SIZE / 2;
+  const outerR = SIZE * 0.44;
+  const innerR = SIZE * 0.28;
+  const gap    = 0.018; // radians gap between segments
 
-  const maxVal = Math.max(...intervals.map(d => d.principal + d.interest));
-  const barW   = chartW / intervals.length;
-  const gap    = Math.max(2, barW * 0.12);
+  const segments = [
+    { value: piAmount,  color: '#0157FF' },
+    { value: taxAmount, color: '#10B981' },
+    { value: insAmount, color: '#F59E0B' },
+  ];
 
-  ctx.clearRect(0, 0, W, H);
-
-  // Y axis labels
-  ctx.fillStyle = '#999';
-  ctx.font = '10px system-ui, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  for (let i = 0; i <= 4; i++) {
-    const val = (maxVal / 4) * i;
-    const y   = padT + chartH - (chartH * i / 4);
-    ctx.fillText('$' + (val >= 1000 ? Math.round(val / 1000) + 'k' : Math.round(val)), padL - 5, y);
-  }
-
-  // Bars
-  intervals.forEach((d, i) => {
-    const x      = padL + i * barW + gap / 2;
-    const bw     = barW - gap;
-    const totalH = chartH * (d.principal + d.interest) / maxVal;
-    const prinH  = chartH * d.principal / maxVal;
-    const intH   = totalH - prinH;
-
-    // interest (bottom)
-    ctx.fillStyle = '#D1D5DB';
-    ctx.fillRect(x, padT + chartH - totalH, bw, intH);
-
-    // principal (top)
-    ctx.fillStyle = '#378ADD';
-    ctx.fillRect(x, padT + chartH - prinH, bw, prinH);
-
-    // x label
-    ctx.fillStyle = '#999';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText(d.label, x + bw / 2, padT + chartH + 4);
+  let startAngle = -Math.PI / 2;
+  segments.forEach(seg => {
+    const sweep = (seg.value / total) * 2 * Math.PI - gap;
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, startAngle + gap / 2, startAngle + gap / 2 + sweep);
+    ctx.arc(cx, cy, innerR, startAngle + gap / 2 + sweep, startAngle + gap / 2, true);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
+    startAngle += sweep + gap;
   });
 
-  // Y axis line
-  ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-  ctx.lineWidth = 1;
+  // Center fill
   ctx.beginPath();
-  ctx.moveTo(padL, padT);
-  ctx.lineTo(padL, padT + chartH);
-  ctx.stroke();
+  ctx.arc(cx, cy, innerR - 1, 0, 2 * Math.PI);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // Center: monthly total
+  const totalStr = '$' + Math.round(total).toLocaleString('en-US');
+  ctx.fillStyle = '#151515';
+  ctx.font = `600 ${Math.round(SIZE * 0.095)}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(totalStr, cx, cy - SIZE * 0.07);
+
+  ctx.fillStyle = '#5A6472';
+  ctx.font = `${Math.round(SIZE * 0.062)}px system-ui, sans-serif`;
+  ctx.fillText('/month', cx, cy + SIZE * 0.08);
 }
 
 // ─── CALCULATOR: render results ──────────────────────────────────────────────
@@ -599,9 +567,8 @@ function recalculate() {
     if (el) el.textContent = val;
   }
 
-  // Chart
-  const schedule = buildAmortSchedule(principal, annualRate, termMonths);
-  drawAmortChart(schedule, termYears);
+  // Donut chart
+  drawDonutChart(monthlyPI, monthlyTax, monthlyIns);
 }
 
 // ─── EVENT LISTENERS ─────────────────────────────────────────────────────────

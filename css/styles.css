@@ -1,19 +1,31 @@
 /* ─── DESIGN TOKENS ─────────────────────────────────────────────────────── */
 :root {
-  --blue-light:   #E6F1FB;
-  --blue-mid:     #378ADD;
-  --blue-dark:    #185FA5;
-  --blue-text:    #042C53;
-  --green-light:  #EAF3DE;
-  --green-text:   #3B6D11;
-  --amber-light:  #FAEEDA;
-  --amber-text:   #633806;
-  --gray-bg:      #F1EFE8;
-  --gray-border:  rgba(0,0,0,0.12);
-  --text-primary: #1a1a1a;
-  --text-muted:   #666;
-  --radius-md:    8px;
-  --radius-lg:    12px;
+  /* Brand */
+  --navy:          #061D4B;
+  --blue-bright:   #0157FF;
+  --blue-light:    #EBF2FF;
+  --blue-mid:      #3B82F6;
+  --blue-dark:     #185FA5;
+  --blue-text:     #042C53;
+
+  /* Calculator segment colors — used on donut chart + breakdown rows */
+  --clr-pi:        #0157FF;
+  --clr-tax:       #10B981;
+  --clr-ins:       #F59E0B;
+
+  /* Status badges */
+  --green-light:   #D1FAE5;
+  --green-text:    #065F46;
+  --amber-light:   #FEF3C7;
+  --amber-text:    #92400E;
+
+  /* Neutrals */
+  --gray-bg:       #EEF2F7;
+  --gray-border:   rgba(0,0,0,0.10);
+  --text-primary:  #151515;
+  --text-muted:    #5A6472;
+  --radius-md:     8px;
+  --radius-lg:     12px;
 }
 
 /* ─── RESET / BASE ──────────────────────────────────────────────────────── */
@@ -117,8 +129,8 @@ a:hover { text-decoration: underline; }
 
 #navbar .brand {
   font-size: 18px;
-  font-weight: 500;
-  color: var(--blue-dark);
+  font-weight: 600;
+  color: var(--navy);
   letter-spacing: -0.3px;
 }
 
@@ -441,7 +453,7 @@ section { margin-bottom: 40px; }
   #calculator-section .calc-grid { grid-template-columns: 1fr; }
 }
 
-.calc-panel { padding: 20px; }
+.calc-panel { padding: 20px; overflow: hidden; }
 
 .calc-field { margin-bottom: 16px; }
 
@@ -515,27 +527,60 @@ section { margin-bottom: 40px; }
 
 /* results panel */
 .result-monthly {
+  background: var(--navy);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   text-align: center;
-  padding: 20px 0 16px;
-  border-bottom: 0.5px solid var(--gray-border);
-  margin-bottom: 16px;
+  padding: 20px 16px 18px;
+  margin: -20px -20px 0;
 }
 
-.result-monthly .label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-.result-monthly .amount { font-size: 32px; font-weight: 500; color: var(--text-primary); }
+.result-monthly .label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.result-monthly .amount {
+  font-size: 38px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
 
-.breakdown { margin-bottom: 16px; }
+.breakdown {
+  margin: 16px 0 12px;
+}
 
 .breakdown-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 14px;
-  padding: 5px 0;
+  padding: 6px 0;
   border-bottom: 0.5px solid var(--gray-border);
 }
 .breakdown-row:last-child { border-bottom: none; }
-.breakdown-row .b-label { color: var(--text-muted); }
-.breakdown-row .b-value { font-weight: 500; }
+.breakdown-row .b-label {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.breakdown-row.bd-pi  .b-label::before,
+.breakdown-row.bd-tax .b-label::before,
+.breakdown-row.bd-ins .b-label::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.breakdown-row.bd-pi  .b-label::before { background: var(--clr-pi); }
+.breakdown-row.bd-tax .b-label::before { background: var(--clr-tax); }
+.breakdown-row.bd-ins .b-label::before { background: var(--clr-ins); }
+.breakdown-row .b-value { font-weight: 600; }
 
 .totals-divider {
   border: none;
@@ -552,37 +597,44 @@ section { margin-bottom: 40px; }
 }
 .total-row .t-value { color: var(--text-primary); font-weight: 500; }
 
-/* amortization chart */
+/* donut chart */
 #amort-chart-wrap {
-  margin-top: 20px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 #amort-chart-wrap .chart-title {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  align-self: flex-start;
 }
 #amort-canvas {
-  width: 100%;
   display: block;
+  width: 180px;
+  height: 180px;
 }
 
 .chart-legend {
   display: flex;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 14px;
+  margin-top: 12px;
   font-size: 12px;
   color: var(--text-muted);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .legend-dot {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: 50%;
   margin-right: 4px;
   vertical-align: middle;
 }
-.legend-principal { background: var(--blue-mid); }
-.legend-interest  { background: #D1D5DB; }
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
 footer {

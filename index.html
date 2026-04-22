@@ -121,7 +121,7 @@
   <!-- Apply at: https://www.google.com/adsense/start/               -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7549070786734257" crossorigin="anonymous"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -295,15 +295,15 @@
             </div>
 
             <div class="breakdown" aria-label="Payment breakdown">
-              <div class="breakdown-row">
+              <div class="breakdown-row bd-pi">
                 <span class="b-label">Principal &amp; Interest</span>
                 <span class="b-value" id="result-pi">—</span>
               </div>
-              <div class="breakdown-row">
+              <div class="breakdown-row bd-tax">
                 <span class="b-label">Property Tax</span>
                 <span class="b-value" id="result-tax">—</span>
               </div>
-              <div class="breakdown-row">
+              <div class="breakdown-row bd-ins">
                 <span class="b-label">Home Insurance</span>
                 <span class="b-value" id="result-insurance">—</span>
               </div>
@@ -325,11 +325,12 @@
             </div>
 
             <div id="amort-chart-wrap">
-              <div class="chart-title" id="amort-title">Amortization by Period</div>
+              <div class="chart-title" id="amort-title">Payment Breakdown</div>
               <canvas id="amort-canvas" role="img" aria-labelledby="amort-title"></canvas>
               <div class="chart-legend" aria-hidden="true">
-                <span><span class="legend-dot legend-principal"></span>Principal</span>
-                <span><span class="legend-dot legend-interest"></span>Interest</span>
+                <span><span class="legend-dot" style="background:var(--clr-pi)"></span>P&amp;I</span>
+                <span><span class="legend-dot" style="background:var(--clr-tax)"></span>Tax</span>
+                <span><span class="legend-dot" style="background:var(--clr-ins)"></span>Insurance</span>
               </div>
             </div>
 
@@ -379,7 +380,7 @@
     <p style="margin-top:6px">© 2026 MortgageRate.live</p>
   </footer>
 
-  <script src="js/app.js?v=3"></script>
+  <script src="js/app.js?v=4"></script>
 
 </body>
 </html>
