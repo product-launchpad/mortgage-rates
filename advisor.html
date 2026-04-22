@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Mortgage Rate Advisor | MortgageRate.live — Find Your Best Lender</title>
+  <meta name="description" content="Answer 3 quick questions — purchase or refinance, loan type, and credit score — and we'll match you with the best mortgage lenders for your situation." />
+  <link rel="canonical" href="https://mortgagerate.live/advisor.html" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VV6D8TWXQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3VV6D8TWXQ');
+  </script>
+
+  <meta name="google-adsense-account" content="ca-pub-7549070786734257">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7549070786734257" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="stylesheet" href="css/advisor.css?v=1" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- ─── NAVBAR ─────────────────────────────────────────────────────────── -->
+  <nav id="navbar" aria-label="Site navigation">
+    <a href="/" class="brand">MortgageRate.live</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Live Rates</a>
+      <a href="/advisor.html" class="nav-link active">Rate Advisor</a>
+      <a href="/blog/" class="nav-link">Blog</a>
+    </div>
+  </nav>
+
+  <div class="quiz-wrap">
+
+    <!-- ─── PAGE HEADING ────────────────────────────────────────────────── -->
+    <div class="quiz-header">
+      <h1>Find Your Best Mortgage Match</h1>
+      <p>Answer 3 quick questions and we'll show you the best lenders for your situation.</p>
+    </div>
+
+    <!-- ─── PROGRESS INDICATOR ──────────────────────────────────────────── -->
+    <div class="quiz-progress" aria-label="Quiz progress">
+      <div class="progress-step active" data-step="1">1</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="2">2</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="3">3</div>
+    </div>
+
+    <!-- ─── STEP 1: GOAL ──────────────────────────────────────────────── -->
+    <div class="quiz-step active" id="step-1">
+      <div class="step-label">Step 1 of 3</div>
+      <div class="step-title">What's your goal?</div>
+      <div class="step-subtitle">Choose the option that best describes your situation.</div>
+
+      <div class="option-grid option-grid-2">
+        <div class="option-card" data-value="purchase" role="button" tabindex="0" aria-label="Purchase a home">
+          <div class="option-icon">🏠</div>
+          <div class="option-title">Purchase a Home</div>
+          <div class="option-desc">I'm buying a new home or investment property.</div>
+        </div>
+        <div class="option-card" data-value="refinance" role="button" tabindex="0" aria-label="Refinance">
+          <div class="option-icon">🔄</div>
+          <div class="option-title">Refinance</div>
+          <div class="option-desc">I want to lower my rate or change my loan terms.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STEP 2: LOAN TYPE ─────────────────────────────────────────── -->
+    <div class="quiz-step" id="step-2">
+      <div class="step-label">Step 2 of 3</div>
+      <div class="step-title">What loan type are you considering?</div>
+      <div class="step-subtitle">Fixed-rate loans offer payment stability. ARMs offer a lower initial rate that adjusts after the fixed period.</div>
+
+      <div class="option-grid option-grid-3">
+        <div class="option-card" data-value="30yr" role="button" tabindex="0">
+          <div class="option-icon">📅</div>
+          <div class="option-title">30-yr Fixed</div>
+          <div class="option-desc">Most popular. Predictable payments over 30 years.</div>
+        </div>
+        <div class="option-card" data-value="15yr" role="button" tabindex="0">
+          <div class="option-icon">⚡</div>
+          <div class="option-title">15-yr Fixed</div>
+          <div class="option-desc">Pay off faster. Lower rate, higher monthly payment.</div>
+        </div>
+        <div class="option-card" data-value="5-1-arm" role="button" tabindex="0">
+          <div class="option-icon">📈</div>
+          <div class="option-title">5/1 ARM</div>
+          <div class="option-desc">Fixed for 5 years, then adjusts annually. Lower start rate.</div>
+          <div class="option-tag">Lower initial rate</div>
+        </div>
+        <div class="option-card" data-value="7-1-arm" role="button" tabindex="0">
+          <div class="option-icon">📊</div>
+          <div class="option-title">7/1 ARM</div>
+          <div class="option-desc">Fixed for 7 years, then adjusts annually.</div>
+          <div class="option-tag">Lower initial rate</div>
+        </div>
+        <div class="option-card" data-value="10-1-arm" role="button" tabindex="0">
+          <div class="option-icon">🗓️</div>
+          <div class="option-title">10/1 ARM</div>
+          <div class="option-desc">Fixed for 10 years. Good if you plan to move within a decade.</div>
+          <div class="option-tag">Lower initial rate</div>
+        </div>
+        <div class="option-card" data-value="unsure" role="button" tabindex="0">
+          <div class="option-icon">🤔</div>
+          <div class="option-title">Not Sure</div>
+          <div class="option-desc">Show me all options and I'll decide after comparing.</div>
+        </div>
+      </div>
+
+      <div class="quiz-nav">
+        <button class="btn-back" id="back-2">← Back</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 3: CREDIT SCORE ──────────────────────────────────────── -->
+    <div class="quiz-step" id="step-3">
+      <div class="step-label">Step 3 of 3</div>
+      <div class="step-title">What's your credit score range?</div>
+      <div class="step-subtitle">Your score affects which lenders and programs you qualify for. A rough estimate is fine.</div>
+
+      <div class="credit-list" role="radiogroup" aria-label="Credit score range">
+        <div class="credit-option" data-value="780plus" role="radio" tabindex="0" aria-label="780 or above, Excellent">
+          <div class="credit-score-range">780+</div>
+          <div class="credit-score-label">Excellent</div>
+          <div class="score-pips">
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+          </div>
+        </div>
+        <div class="credit-option" data-value="740-779" role="radio" tabindex="0" aria-label="740 to 779, Very Good">
+          <div class="credit-score-range">740–779</div>
+          <div class="credit-score-label">Very Good</div>
+          <div class="score-pips">
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip"></div>
+          </div>
+        </div>
+        <div class="credit-option" data-value="700-739" role="radio" tabindex="0" aria-label="700 to 739, Good">
+          <div class="credit-score-range">700–739</div>
+          <div class="credit-score-label">Good</div>
+          <div class="score-pips">
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+          </div>
+        </div>
+        <div class="credit-option" data-value="660-699" role="radio" tabindex="0" aria-label="660 to 699, Fair">
+          <div class="credit-score-range">660–699</div>
+          <div class="credit-score-label">Fair</div>
+          <div class="score-pips">
+            <div class="score-pip filled"></div>
+            <div class="score-pip filled"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+          </div>
+        </div>
+        <div class="credit-option" data-value="below660" role="radio" tabindex="0" aria-label="Below 660, Needs Improvement">
+          <div class="credit-score-range">Below 660</div>
+          <div class="credit-score-label">Needs Improvement</div>
+          <div class="score-pips">
+            <div class="score-pip filled"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+            <div class="score-pip"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz-nav">
+        <button class="btn-back" id="back-3">← Back</button>
+        <button class="btn-primary" id="show-results-btn" disabled>Find My Matches →</button>
+      </div>
+    </div>
+
+    <!-- ─── RESULTS ───────────────────────────────────────────────────── -->
+    <div id="results-step">
+      <div class="step-label">Your Results</div>
+      <div class="step-title">Your Best Mortgage Matches</div>
+
+      <div id="results-summary" class="results-summary"></div>
+
+      <div id="results-insight" class="results-insight"></div>
+
+      <div id="arm-notice" class="arm-notice">
+        ⚠ Our live rate feed covers 30-yr and 15-yr fixed rates. ARM rates vary by lender and are not in our live data — click "Get Quote" on each lender's site for current ARM pricing.
+      </div>
+
+      <div class="results-section-title">Lenders Matched to Your Profile</div>
+      <div id="results-grid" class="results-grid"></div>
+
+      <div class="results-footer">
+        <button class="btn-back" id="back-results">← Change My Answers</button>
+        <p>Rates are indicative — visit each lender for exact quotes. Not financial advice.</p>
+      </div>
+    </div>
+
+  </div><!-- /quiz-wrap -->
+
+  <footer>
+    <p>Rate data sourced via AI web search. Lender rates are indicative — visit each lender for exact quotes. Not financial advice.</p>
+    <p style="margin-top:6px">© 2026 MortgageRate.live · <a href="/">Live Rates</a> · <a href="/blog/">Blog</a></p>
+  </footer>
+
+  <script src="js/advisor.js?v=1"></script>
+
+</body>
+</html>

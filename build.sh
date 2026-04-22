@@ -6,10 +6,13 @@
 
 set -e
 
-echo "Injecting environment variables into js/app.js..."
+echo "Injecting environment variables into js/app.js and js/advisor.js..."
 
 sed -i "s|__ANTHROPIC_API_KEY__|${ANTHROPIC_API_KEY}|g" js/app.js
 sed -i "s|__SUPABASE_URL__|${SUPABASE_URL}|g" js/app.js
 sed -i "s|__SUPABASE_ANON_KEY__|${SUPABASE_ANON_KEY}|g" js/app.js
+
+sed -i "s|__SUPABASE_URL__|${SUPABASE_URL}|g" js/advisor.js
+sed -i "s|__SUPABASE_ANON_KEY__|${SUPABASE_ANON_KEY}|g" js/advisor.js
 
 echo "Build complete."

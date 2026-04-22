@@ -123,16 +123,39 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid var(--gray-border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0;
   padding: 0 24px;
 }
 
-#navbar .brand {
+#navbar .brand,
+#navbar a.brand {
   font-size: 18px;
   font-weight: 600;
   color: var(--navy);
   letter-spacing: -0.3px;
+  text-decoration: none;
+  flex-shrink: 0;
 }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  padding-left: 16px;
+}
+
+.nav-link {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.nav-link:hover { background: var(--gray-bg); color: var(--text-primary); text-decoration: none; }
+.nav-link.active { color: var(--navy); font-weight: 500; }
 
 #navbar .nav-right {
   display: flex;
@@ -670,9 +693,10 @@ footer {
 
   section { margin-bottom: 20px; }
 
-  /* navbar: hide timestamp to save space */
+  /* navbar: hide timestamp and nav links to save space */
   #navbar { padding: 0 16px; height: 48px; }
   #navbar .timestamp { display: none; }
+  .nav-links { display: none; }
 
   /* page heading */
   .page-heading { padding: 16px 0 0; margin-bottom: 16px; }
