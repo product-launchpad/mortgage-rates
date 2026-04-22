@@ -26,12 +26,12 @@ const FALLBACK_RATES = [
 ];
 
 // ─── SUPABASE CLIENT ────────────────────────────────────────────────────────
-let supabase = null;
+let supabaseClient = null;
 
 function initSupabase() {
   if (!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.startsWith('__')) return;
   try {
-    supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
   } catch (e) {
     console.warn('Supabase init failed:', e.message);
   }
@@ -52,9 +52,9 @@ let state = {
 
 // ─── DATA LAYER: read from Supabase ─────────────────────────────────────────
 async function fetchFromSupabase() {
-  if (!supabase) return null;
+  if (!supabaseClient) return null;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('rate_snapshots')
       .select('*')
       .order('fetched_at', { ascending: false });
@@ -162,7 +162,7 @@ Search today's date for each source. If a bank's rate is not publicly findable, 
 
 // ─── DATA LAYER: insert to Supabase ─────────────────────────────────────────
 async function insertToSupabase(rows) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   const now = new Date().toISOString();
   const insertRows = rows.map(r => ({
     fetched_at:  now,
@@ -174,7 +174,7 @@ async function insertToSupabase(rows) {
     raw_snippet: r.raw_snippet || null,
   }));
 
-  const { error } = await supabase.from('rate_snapshots').insert(insertRows);
+  const { error } = await supabaseClient.from('rate_snapshots').insert(insertRows);
   if (error) console.warn('Supabase insert error:', error.message);
 }
 
@@ -685,9 +685,9 @@ async function init() {
     state.rateRows = rows || [];
 
     if (rows && rows.length > 0) {
-      if (supabase) {
+      if (supabaseClient) {
         try {
-          const { data: prevFed } = await supabase
+          const { data: prevFed } = await supabaseClient
             .from('rate_snapshots')
             .select('*')
             .eq('source', 'fed')
