@@ -7,13 +7,18 @@ const CONFIG = {
 // Fallback rates in case Supabase is unavailable
 const FALLBACK_RATES = [
   { source: 'navy_federal',   rate: 6.75, term_type: '30yr', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
-  { source: 'sage_home_loans',rate: 6.87, term_type: '30yr', bank_url: 'https://sagehomeloans.com/mortgage-rates' },
+  { source: 'penfed',         rate: 6.82, term_type: '30yr', bank_url: 'https://www.penfed.org/mortgage/mortgage-rates' },
+  { source: 'better_mortgage',rate: 6.95, term_type: '30yr', bank_url: 'https://better.com/mortgage-rates' },
+  { source: 'usaa',           rate: 6.80, term_type: '30yr', bank_url: 'https://www.usaa.com/banking/home-mortgages/' },
   { source: 'chase',          rate: 6.99, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
+  { source: 'citi',           rate: 7.02, term_type: '30yr', bank_url: 'https://www.citi.com/mortgage/purchase-rates' },
   { source: 'bank_of_america',rate: 7.05, term_type: '30yr', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
   { source: 'us_bank',        rate: 7.08, term_type: '30yr', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
   { source: 'pnc_bank',       rate: 7.10, term_type: '30yr', bank_url: 'https://www.pnc.com/en/personal-banking/borrowing/mortgage.html' },
-  { source: 'loan_depot',     rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
   { source: 'wells_fargo',    rate: 7.12, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
+  { source: 'truist',         rate: 7.15, term_type: '30yr', bank_url: 'https://www.truist.com/mortgage/current-mortgage-rates' },
+  { source: 'loan_depot',     rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
+  { source: 'td_bank',        rate: 7.20, term_type: '30yr', bank_url: 'https://www.td.com/us/en/personal-banking/mortgage' },
   { source: 'rocket_mortgage',rate: 7.25, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
 ];
 
@@ -54,12 +59,47 @@ const LENDER_META = {
     topFor: ['purchase', 'refinance'],
     offersArm: true,
   },
-  sage_home_loans: {
-    name: 'Sage Home Loans',
-    note: 'Competitive rates for conventional and jumbo loans. Streamlined online experience.',
+  penfed: {
+    name: 'PenFed Credit Union',
+    note: 'Top-rated credit union open to everyone. Known for consistently low rates and VA loan expertise.',
     minCredit: 620,
-    topFor: ['purchase'],
-    offersArm: false,
+    topFor: ['purchase', 'refinance', 'military'],
+    offersArm: true,
+  },
+  citi: {
+    name: 'Citi',
+    note: 'Relationship pricing available for Citi banking customers. Competitive on conventional and jumbo loans.',
+    minCredit: 620,
+    topFor: ['purchase', 'refinance'],
+    offersArm: true,
+  },
+  truist: {
+    name: 'Truist',
+    note: 'One of the largest US banks (SunTrust + BB&T). Strong in Southeast and Mid-Atlantic markets.',
+    minCredit: 620,
+    topFor: ['purchase', 'refinance'],
+    offersArm: true,
+  },
+  better_mortgage: {
+    name: 'Better Mortgage',
+    note: 'No commission, fully digital lender. Competitive rates and fast pre-approval — strong for refinance.',
+    minCredit: 620,
+    topFor: ['purchase', 'refinance', 'first_time'],
+    offersArm: true,
+  },
+  usaa: {
+    name: 'USAA',
+    note: 'Exclusively for military, veterans & eligible family. Highly rated service and competitive VA loan rates.',
+    minCredit: 620,
+    topFor: ['purchase', 'refinance', 'military'],
+    offersArm: true,
+  },
+  td_bank: {
+    name: 'TD Bank',
+    note: 'Strong in Northeast and Mid-Atlantic. Competitive conventional programs with local branch support.',
+    minCredit: 620,
+    topFor: ['purchase', 'refinance'],
+    offersArm: true,
   },
   navy_federal: {
     name: 'Navy Federal',
@@ -128,7 +168,7 @@ async function fetchRates() {
     for (const row of data) {
       if (!seen.has(row.source)) { seen.add(row.source); latest.push(row); }
     }
-    const lenderRows = latest.filter(r => LENDER_META[r.source] && r.rate != null);
+    const lenderRows = latest.filter(r => LENDER_META[r.source] != null && r.rate != null);
     return lenderRows.length >= 3 ? lenderRows : FALLBACK_RATES;
   } catch (e) {
     console.warn('[Advisor] Supabase read error:', e.message);

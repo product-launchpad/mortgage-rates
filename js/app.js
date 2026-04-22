@@ -18,16 +18,21 @@ const FALLBACK_RATES = [
   // freddie_mac kept for calculator pre-fill reference — not shown in grid
   { source: 'freddie_mac',    label: '30-yr Fixed Avg',  rate: 6.30, term_type: '30yr', bank_url: 'https://www.freddiemac.com/pmms' },
   { source: 'freddie_mac_15', label: '15-yr Fixed Avg',  rate: 5.65, term_type: '15yr', bank_url: 'https://www.freddiemac.com/pmms' },
-  // 9 displayed lenders
-  { source: 'chase',          label: '30-yr Fixed',      rate: 6.99, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
-  { source: 'wells_fargo',    label: '30-yr Fixed',      rate: 7.12, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
-  { source: 'bank_of_america',label: '30-yr Fixed',      rate: 7.05, term_type: '30yr', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
-  { source: 'rocket_mortgage',label: '30-yr Fixed',      rate: 7.25, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
-  { source: 'loan_depot',     label: '30-yr Fixed',      rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
-  { source: 'sage_home_loans',label: '30-yr Fixed',      rate: 6.87, term_type: '30yr', bank_url: 'https://sagehomeloans.com/mortgage-rates' },
-  { source: 'navy_federal',   label: '30-yr Fixed',      rate: 6.75, term_type: '30yr', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
-  { source: 'pnc_bank',       label: '30-yr Fixed',      rate: 7.10, term_type: '30yr', bank_url: 'https://www.pnc.com/en/personal-banking/borrowing/mortgage.html' },
-  { source: 'us_bank',        label: '30-yr Fixed',      rate: 7.08, term_type: '30yr', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
+  // displayed lenders — up to 9 tiles shown at once (sorted by rate)
+  { source: 'chase',          label: '30-yr Fixed', rate: 6.99, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
+  { source: 'wells_fargo',    label: '30-yr Fixed', rate: 7.12, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
+  { source: 'bank_of_america',label: '30-yr Fixed', rate: 7.05, term_type: '30yr', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
+  { source: 'rocket_mortgage',label: '30-yr Fixed', rate: 7.25, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
+  { source: 'loan_depot',     label: '30-yr Fixed', rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
+  { source: 'navy_federal',   label: '30-yr Fixed', rate: 6.75, term_type: '30yr', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
+  { source: 'pnc_bank',       label: '30-yr Fixed', rate: 7.10, term_type: '30yr', bank_url: 'https://www.pnc.com/en/personal-banking/borrowing/mortgage.html' },
+  { source: 'us_bank',        label: '30-yr Fixed', rate: 7.08, term_type: '30yr', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
+  { source: 'penfed',         label: '30-yr Fixed', rate: 6.82, term_type: '30yr', bank_url: 'https://www.penfed.org/mortgage/mortgage-rates' },
+  { source: 'citi',           label: '30-yr Fixed', rate: 7.02, term_type: '30yr', bank_url: 'https://www.citi.com/mortgage/purchase-rates' },
+  { source: 'truist',         label: '30-yr Fixed', rate: 7.15, term_type: '30yr', bank_url: 'https://www.truist.com/mortgage/current-mortgage-rates' },
+  { source: 'better_mortgage',label: '30-yr Fixed', rate: 6.95, term_type: '30yr', bank_url: 'https://better.com/mortgage-rates' },
+  { source: 'usaa',           label: '30-yr Fixed', rate: 6.80, term_type: '30yr', bank_url: 'https://www.usaa.com/banking/home-mortgages/' },
+  { source: 'td_bank',        label: '30-yr Fixed', rate: 7.20, term_type: '30yr', bank_url: 'https://www.td.com/us/en/personal-banking/mortgage' },
 ];
 
 // ─── SUPABASE CLIENT ────────────────────────────────────────────────────────
@@ -103,12 +108,17 @@ Format:
   { "source": "bank_of_america", "label": "30-yr Fixed", "rate": 7.05, "term_type": "30yr", "bank_url": "https://www.bankofamerica.com/mortgage/mortgage-rates/", "raw_snippet": "..." },
   { "source": "rocket_mortgage", "label": "30-yr Fixed", "rate": 7.25, "term_type": "30yr", "bank_url": "https://www.rocketmortgage.com/mortgage-rates", "raw_snippet": "..." },
   { "source": "loan_depot", "label": "30-yr Fixed", "rate": 7.18, "term_type": "30yr", "bank_url": "https://www.loandepot.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "sage_home_loans", "label": "30-yr Fixed", "rate": 6.87, "term_type": "30yr", "bank_url": "https://sagehomeloans.com/mortgage-rates", "raw_snippet": "..." },
   { "source": "navy_federal", "label": "30-yr Fixed", "rate": 6.75, "term_type": "30yr", "bank_url": "https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/", "raw_snippet": "..." },
   { "source": "pnc_bank", "label": "30-yr Fixed", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.pnc.com/en/personal-banking/borrowing/mortgage.html", "raw_snippet": "..." },
-  { "source": "us_bank", "label": "30-yr Fixed", "rate": 7.08, "term_type": "30yr", "bank_url": "https://www.usbank.com/home-loans/mortgage/mortgage-rates.html", "raw_snippet": "..." }
+  { "source": "us_bank", "label": "30-yr Fixed", "rate": 7.08, "term_type": "30yr", "bank_url": "https://www.usbank.com/home-loans/mortgage/mortgage-rates.html", "raw_snippet": "..." },
+  { "source": "penfed", "label": "30-yr Fixed", "rate": 6.82, "term_type": "30yr", "bank_url": "https://www.penfed.org/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "citi", "label": "30-yr Fixed", "rate": 7.02, "term_type": "30yr", "bank_url": "https://www.citi.com/mortgage/purchase-rates", "raw_snippet": "..." },
+  { "source": "truist", "label": "30-yr Fixed", "rate": 7.15, "term_type": "30yr", "bank_url": "https://www.truist.com/mortgage/current-mortgage-rates", "raw_snippet": "..." },
+  { "source": "better_mortgage", "label": "30-yr Fixed", "rate": 6.95, "term_type": "30yr", "bank_url": "https://better.com/mortgage-rates", "raw_snippet": "..." },
+  { "source": "usaa", "label": "30-yr Fixed", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.usaa.com/banking/home-mortgages/", "raw_snippet": "..." },
+  { "source": "td_bank", "label": "30-yr Fixed", "rate": 7.20, "term_type": "30yr", "bank_url": "https://www.td.com/us/en/personal-banking/mortgage", "raw_snippet": "..." }
 ]
-Search today's date for each source. If a rate is not publicly available, use null and note it in raw_snippet.`;
+Search today's date for each source. Use the provided bank_url as the starting point for each lender search. If a rate is not publicly available, use null and note it in raw_snippet.`;
 
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 60000);
@@ -198,10 +208,14 @@ function formatSourceName(source) {
     citi:            'Citi',
     rocket_mortgage: 'Rocket Mortgage',
     loan_depot:      'loanDepot',
-    sage_home_loans: 'Sage Home Loans',
     navy_federal:    'Navy Federal',
     pnc_bank:        'PNC Bank',
     us_bank:         'U.S. Bank',
+    penfed:          'PenFed Credit Union',
+    truist:          'Truist',
+    better_mortgage: 'Better Mortgage',
+    usaa:            'USAA',
+    td_bank:         'TD Bank',
   };
   return map[source] || source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -429,7 +443,8 @@ async function renderAll(rows, prevFedRow) {
   // Null-rate rows removed so blank tiles never appear.
   const DISPLAY_SOURCES = new Set([
     'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
-    'loan_depot', 'sage_home_loans', 'navy_federal', 'pnc_bank', 'us_bank',
+    'loan_depot', 'navy_federal', 'pnc_bank', 'us_bank',
+    'penfed', 'citi', 'truist', 'better_mortgage', 'usaa', 'td_bank',
   ]);
   const bankRows = rows.filter(r => DISPLAY_SOURCES.has(r.source) && r.rate != null);
 
