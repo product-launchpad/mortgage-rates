@@ -141,8 +141,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 2px;
-  flex: 1;
-  padding-left: 16px;
+  margin-left: 16px;
 }
 
 .nav-link {
@@ -161,6 +160,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 
 #navbar .timestamp {

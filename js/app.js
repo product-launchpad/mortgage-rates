@@ -13,6 +13,13 @@ const NEXT_FOMC_DATE = 'June 17–18, 2026';
 
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+// Ordered list of lenders to display — determines tile order before sort
+const DISPLAY_ORDER = [
+  'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
+  'loan_depot', 'navy_federal', 'pnc_bank', 'us_bank',
+  'penfed', 'citi', 'truist', 'better_mortgage', 'usaa', 'td_bank',
+];
+
 const FALLBACK_RATES = [
   { source: 'fed',            label: 'Fed Funds Rate',   rate: 4.33, term_type: 'fed',  bank_url: 'https://www.federalreserve.gov/releases/h15/' },
   // freddie_mac kept for calculator pre-fill reference — not shown in grid
@@ -339,8 +346,8 @@ function renderRateCards(rows) {
       formatSourceName(a.source).localeCompare(formatSourceName(b.source)));
   }
 
-  // Hard cap — never show more than 9 tiles
-  filtered = filtered.slice(0, 9);
+  // Cap to display list size
+  filtered = filtered.slice(0, DISPLAY_ORDER.length);
 
   grid.innerHTML = filtered.map(row => {
     const barPct  = row.rate != null ? Math.round((Number(row.rate) / maxRate) * 100) : 0;
@@ -438,15 +445,21 @@ function hideBanners() {
 async function renderAll(rows, prevFedRow) {
   if (!rows || rows.length === 0) return;
 
-  const fedRow  = rows.find(r => r.source === 'fed') || null;
-  // Explicit allowlist — Freddie Mac kept in rows[] for calculator pre-fill but not displayed.
-  // Null-rate rows removed so blank tiles never appear.
-  const DISPLAY_SOURCES = new Set([
-    'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
-    'loan_depot', 'navy_federal', 'pnc_bank', 'us_bank',
-    'penfed', 'citi', 'truist', 'better_mortgage', 'usaa', 'td_bank',
-  ]);
-  const bankRows = rows.filter(r => DISPLAY_SOURCES.has(r.source) && r.rate != null);
+  const fedRow = rows.find(r => r.source === 'fed') || null;
+
+  // Build one tile per display source: live Supabase row if available,
+  // otherwise a placeholder (rate: null) so lenders with no cached data
+  // still appear as "—" tiles sorted to the end.
+  const rateBySource = new Map(rows.map(r => [r.source, r]));
+  const bankRows = [];
+  for (const source of DISPLAY_ORDER) {
+    if (rateBySource.has(source)) {
+      bankRows.push(rateBySource.get(source));
+    } else {
+      const fb = FALLBACK_RATES.find(f => f.source === source);
+      if (fb) bankRows.push({ source, rate: null, term_type: fb.term_type, bank_url: fb.bank_url, fetched_at: null, label: fb.label });
+    }
+  }
 
   state.fedRow  = fedRow;
   state.bankRows = bankRows;
