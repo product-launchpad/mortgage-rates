@@ -11,7 +11,10 @@ const CONFIG = {
 // Source: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
 const NEXT_FOMC_DATE = 'June 17–18, 2026';
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+// Rates refresh once per day at 10:00 AM ET (14:00 UTC covers both EST and EDT).
+// Any snapshot taken after today's 14:00 UTC window start is considered fresh.
+// If it's before 14:00 UTC right now, the window start is yesterday at 14:00 UTC.
+const DAILY_REFRESH_HOUR_UTC = 14;
 
 // Ordered list of lenders to display — determines tile order before sort
 const DISPLAY_ORDER = [
@@ -243,9 +246,22 @@ function formatTimestamp(ts) {
     ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
+function getRateDayStart() {
+  const now = new Date();
+  const todayWindow = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    DAILY_REFRESH_HOUR_UTC, 0, 0
+  ));
+  // Before today's window has opened, the current valid window started yesterday
+  if (now < todayWindow) {
+    todayWindow.setUTCDate(todayWindow.getUTCDate() - 1);
+  }
+  return todayWindow;
+}
+
 function isStale(ts) {
   if (!ts) return true;
-  return (Date.now() - new Date(ts).getTime()) > CACHE_TTL_MS;
+  return new Date(ts) < getRateDayStart();
 }
 
 // ─── RENDER: navbar timestamp ────────────────────────────────────────────────
