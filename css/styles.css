@@ -668,6 +668,29 @@ footer {
   border-top: 1px solid var(--gray-border);
   background: #fff;
 }
+footer a { color: var(--blue-dark); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ─── NOSCRIPT RATE TABLE ────────────────────────────────────────────────── */
+.noscript-rates {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 16px;
+}
+.noscript-rates th {
+  background: var(--navy);
+  color: #fff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+}
+.noscript-rates td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gray-border);
+  color: var(--text-primary);
+}
+.noscript-rates tr:nth-child(even) td { background: var(--blue-light); }
 
 /* ─── UTILITIES ──────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }

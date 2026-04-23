@@ -11,13 +11,14 @@
   <link rel="canonical" href="https://mortgagerate.live/" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <meta name="author" content="MortgageRate.live" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <!-- ─── Open Graph ───────────────────────────────────────────────────── -->
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="https://mortgagerate.live/" />
   <meta property="og:title"       content="Today's Mortgage Rates | MortgageRate.live" />
   <meta property="og:description" content="Live US mortgage rates from major lenders, updated daily via AI web search. Compare 30-yr and 15-yr fixed rates and calculate your exact monthly payment." />
-  <meta property="og:image"       content="https://mortgagerate.live/og-image.png" />
+  <meta property="og:image"       content="https://mortgagerate.live/og-image.svg" />
   <meta property="og:locale"      content="en_US" />
   <meta property="og:site_name"   content="MortgageRate.live" />
 
@@ -26,7 +27,7 @@
   <meta name="twitter:site"        content="@mortgageratelive" />
   <meta name="twitter:title"       content="Today's Mortgage Rates | MortgageRate.live" />
   <meta name="twitter:description" content="Live 30-yr and 15-yr fixed mortgage rates from major US lenders. Updated daily. Free calculator." />
-  <meta name="twitter:image"       content="https://mortgagerate.live/og-image.png" />
+  <meta name="twitter:image"       content="https://mortgagerate.live/og-image.svg" />
 
   <!-- ─── Google Analytics 4 ─────────────────────────────────────────── -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VV6D8TWXQ"></script>
@@ -120,6 +121,46 @@
           "@type": "Answer",
           "text": "Mortgage rates vary daily by lender. MortgageRate.live compares rates from Chase, Wells Fargo, Bank of America, Citi, Rocket Mortgage, U.S. Bank, and Freddie Mac's national average. Sort by 'Lowest rate' to see today's best offers."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What credit score do I need to get the best mortgage rate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To qualify for the most competitive mortgage rates advertised by major lenders, you typically need a FICO credit score of 740 or higher. Borrowers with scores between 700–739 generally receive rates 0.10–0.25% higher, while scores below 660 may see rates 0.50–1.0% above the advertised best. A higher credit score not only improves your rate but may also eliminate the need for private mortgage insurance (PMI) depending on your down payment. Use the Rate Advisor on MortgageRate.live to see which lenders are most likely to match your credit profile."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the Federal Reserve affect mortgage rates?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Federal Reserve does not directly set mortgage rates, but its monetary policy strongly influences them. When the Fed raises its benchmark Federal Funds Rate to combat inflation, borrowing costs across the economy rise, including the yields on 10-year US Treasury bonds — the benchmark most closely correlated with 30-year fixed mortgage rates. Conversely, when the Fed cuts rates to stimulate the economy, mortgage rates tend to fall. Changes in Fed policy are announced at FOMC meetings held approximately eight times per year. MortgageRate.live displays the current Federal Funds Rate alongside live lender rates so you can track this relationship in real time."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an ARM (Adjustable-Rate Mortgage) and when does it make sense?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An adjustable-rate mortgage (ARM) has an interest rate that is fixed for an initial period — typically 5, 7, or 10 years — and then adjusts annually based on a market index (such as SOFR) plus a margin. For example, a 7/1 ARM is fixed for 7 years, then adjusts every year. ARMs typically start with a lower rate than a 30-year fixed, which can save thousands in the early years of the loan. They make the most sense if you plan to sell or refinance before the fixed period ends, or if you expect rates to fall. However, if you hold the loan past the fixed period, your payment can increase significantly. MortgageRate.live's Rate Advisor can help you identify lenders that offer competitive ARM products."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I lock my mortgage rate now or wait for rates to drop?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Rate timing is notoriously difficult to predict even for professional economists. Mortgage rates are influenced by dozens of factors including inflation data, Fed policy signals, bond market movements, and global economic conditions. If you have found a home and the monthly payment is comfortable at today's rate, locking in now eliminates the risk of rates rising before closing. If you believe rates will fall — for example, because of expected Fed rate cuts — you might consider a float-down lock or a shorter lock period. Most lenders offer 30–60 day rate locks. MortgageRate.live shows daily rate trends to help you make a more informed decision, but we always recommend consulting a licensed mortgage professional before locking."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between APR and interest rate on a mortgage?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The interest rate is the annual cost of borrowing the principal loan amount, expressed as a percentage. The Annual Percentage Rate (APR) is a broader measure that includes the interest rate plus other loan costs such as origination fees, discount points, mortgage broker fees, and certain closing costs. APR is expressed as a yearly rate and gives you a more accurate picture of the true cost of a loan over its full term. When comparing mortgage offers from different lenders, always compare APRs — not just interest rates — because a loan with a lower rate but high fees can end up costing more than a loan with a slightly higher rate and no fees. Rates on MortgageRate.live represent advertised interest rates; always confirm the APR directly with each lender."
+        }
       }
     ]
   }
@@ -130,7 +171,7 @@
   <!-- Apply at: https://www.google.com/adsense/start/               -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7549070786734257" crossorigin="anonymous"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -207,6 +248,32 @@
       </div>
 
       <div id="rates-grid" role="list" aria-label="Mortgage rate cards"></div>
+
+      <!-- Static rate table for Googlebot / no-JS environments -->
+      <noscript>
+        <table class="noscript-rates" aria-label="Mortgage rates by lender">
+          <thead>
+            <tr><th>Lender</th><th>Loan Type</th><th>Rate (approx.)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chase</td><td>30-yr Fixed</td><td>~6.90%</td></tr>
+            <tr><td>Wells Fargo</td><td>30-yr Fixed</td><td>~6.85%</td></tr>
+            <tr><td>Bank of America</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
+            <tr><td>Rocket Mortgage</td><td>30-yr Fixed</td><td>~7.00%</td></tr>
+            <tr><td>loanDepot</td><td>30-yr Fixed</td><td>~6.99%</td></tr>
+            <tr><td>Navy Federal CU</td><td>30-yr Fixed</td><td>~6.75%</td></tr>
+            <tr><td>PenFed CU</td><td>30-yr Fixed</td><td>~6.80%</td></tr>
+            <tr><td>Citi</td><td>30-yr Fixed</td><td>~6.95%</td></tr>
+            <tr><td>Truist</td><td>30-yr Fixed</td><td>~6.92%</td></tr>
+            <tr><td>Better Mortgage</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
+            <tr><td>USAA</td><td>30-yr Fixed</td><td>~6.85%</td></tr>
+            <tr><td>U.S. Bank</td><td>30-yr Fixed</td><td>~6.90%</td></tr>
+            <tr><td>PNC Bank</td><td>30-yr Fixed</td><td>~6.95%</td></tr>
+            <tr><td>TD Bank</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:13px;color:#666;margin-top:8px">Rates are estimates — enable JavaScript for live daily rates from each lender.</p>
+      </noscript>
     </section>
 
     <!-- ─── AD UNIT: Between grid and calculator (rectangle) ─────────────── -->
@@ -365,33 +432,47 @@
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
-    <!-- ─── FAQ (hidden, feeds JSON-LD) ────────────────────────────────────── -->
-    <!-- Visually off-screen but indexable — supports FAQ rich results -->
+    <!-- ─── FAQ ──────────────────────────────────────────────────────────────── -->
     <section id="faq-section" aria-labelledby="faq-heading">
       <h2 id="faq-heading">Frequently Asked Questions</h2>
       <dl>
         <dt><h3>What is today's 30-year fixed mortgage rate?</h3></dt>
-        <dd>Today's average 30-year fixed mortgage rate is sourced from Freddie Mac's Primary Mortgage Market Survey (PMMS) and updated daily. Use the filter above to view 30-year rates from major US lenders.</dd>
+        <dd>Today's average 30-year fixed mortgage rate is sourced from Freddie Mac's Primary Mortgage Market Survey (PMMS) and updated daily via AI-powered web search. The rate reflects what lenders are advertising for well-qualified borrowers — your actual rate will depend on your credit score, down payment, and loan size. Use the filter bar above to view 30-year rates side by side from all major US lenders and click any tile to pre-fill the mortgage calculator with that rate.</dd>
 
         <dt><h3>What is the current Federal Funds Rate?</h3></dt>
-        <dd>The Federal Funds Rate is set by the Federal Open Market Committee (FOMC) and directly influences mortgage rates. The current rate is displayed in the banner above, sourced from the Federal Reserve.</dd>
+        <dd>The Federal Funds Rate is the target interest rate set by the Federal Open Market Committee (FOMC) at meetings held approximately eight times per year. It is the rate at which banks lend money to each other overnight, and it serves as the foundation for all other borrowing costs in the economy. While the Fed doesn't set mortgage rates directly, the 10-year US Treasury yield — which closely tracks mortgage rates — responds quickly to changes in Fed policy. The current Federal Funds Rate is displayed in the banner at the top of this page, sourced from the Federal Reserve via AI web search.</dd>
 
         <dt><h3>How do I calculate my monthly mortgage payment?</h3></dt>
-        <dd>Use our free mortgage calculator above. Enter your home price, down payment, loan term, and interest rate to instantly see your estimated monthly payment broken down by principal, interest, property tax, and insurance.</dd>
+        <dd>Use the free mortgage calculator on this page. Enter your home price, down payment amount, loan term (10, 15, 20, or 30 years), interest rate, estimated property tax rate, and annual home insurance cost. The calculator instantly shows your estimated total monthly payment broken down into principal and interest, property tax, and insurance. You can also click any lender's rate card to automatically populate the interest rate field. Remember, this is an estimate — your actual payment may also include HOA fees, PMI (if your down payment is under 20%), and flood insurance.</dd>
 
         <dt><h3>What is the difference between a 15-year and 30-year mortgage?</h3></dt>
-        <dd>A 15-year mortgage typically has a lower interest rate but higher monthly payments. A 30-year mortgage offers lower monthly payments but you pay more total interest. Click any rate card above to pre-fill the calculator and compare.</dd>
+        <dd>A 15-year fixed mortgage has a lower interest rate (typically 0.50–0.75% below a 30-year) but requires higher monthly payments because you're repaying the loan in half the time. A 30-year mortgage has lower monthly payments, giving you more cash flow flexibility, but you'll pay significantly more total interest over the life of the loan. For example, on a $400,000 loan at today's rates, a 15-year mortgage might save you over $120,000 in interest compared to a 30-year — but your monthly payment will be roughly 40–50% higher. Use the calculator above and switch the loan term to compare both scenarios for your specific situation.</dd>
 
         <dt><h3>Which bank has the lowest mortgage rate today?</h3></dt>
-        <dd>Rates vary daily. MortgageRate.live compares Chase, Wells Fargo, Bank of America, Citi, Rocket Mortgage, U.S. Bank, and the Freddie Mac national average. Sort by "Lowest rate" in the filter bar above to find today's best offer.</dd>
+        <dd>Mortgage rates change daily and the lowest rate varies by lender, loan type, and borrower profile. MortgageRate.live compares advertised rates from 14 major lenders including Chase, Wells Fargo, Bank of America, Rocket Mortgage, Navy Federal, PenFed, Citi, Truist, Better Mortgage, USAA, loanDepot, U.S. Bank, PNC Bank, and TD Bank. Use the "Sort by Lowest Rate" option in the filter bar to see today's ranking. Credit unions like Navy Federal and PenFed sometimes offer the most competitive rates but may require membership eligibility. Always compare APR in addition to the interest rate, as fees can significantly impact the true cost of a loan.</dd>
+
+        <dt><h3>What credit score do I need to get the best mortgage rate?</h3></dt>
+        <dd>To qualify for the most competitive mortgage rates advertised by major lenders, you generally need a FICO credit score of 740 or higher. Borrowers in the 700–739 range typically see rates 0.10–0.25% higher, while scores between 660–699 may result in rates 0.25–0.50% above the best available. Scores below 660 can still qualify for conventional loans but often at significantly higher rates, and FHA loans (with a minimum score of 580) may be worth considering. A single percentage point difference in your rate on a $400,000 loan translates to roughly $250 per month and over $90,000 in extra interest over 30 years — making it worth improving your credit score before applying if possible. Use our Rate Advisor to see which lenders are best matched to your credit profile.</dd>
+
+        <dt><h3>How does the Federal Reserve affect mortgage rates?</h3></dt>
+        <dd>The Federal Reserve does not set mortgage rates directly, but its monetary policy is the most powerful force acting on them. When the Fed raises its Federal Funds Rate to combat inflation, the yields on 10-year US Treasury bonds — which 30-year fixed mortgage rates track closely — tend to rise as well, pushing mortgage rates up. When the Fed cuts rates to stimulate growth, mortgage rates typically fall. However, the relationship isn't always immediate or 1-to-1: lender competition, secondary mortgage market conditions, and economic uncertainty also play significant roles. MortgageRate.live displays the current Federal Funds Rate alongside live lender rates so you can monitor this relationship in real time.</dd>
+
+        <dt><h3>What is an ARM and when does it make sense?</h3></dt>
+        <dd>An adjustable-rate mortgage (ARM) has an interest rate that stays fixed for an initial period — typically 5, 7, or 10 years — and then adjusts annually based on a market index (such as SOFR) plus a lender margin. For example, a 7/1 ARM is fixed for 7 years, then adjusts every year. ARMs typically start with a rate 0.50–1.0% below a comparable 30-year fixed, which can save thousands in the early years. They make the most financial sense if you plan to sell or refinance before the fixed period ends, or if you're confident rates will be lower when your loan adjusts. The main risk is that your monthly payment can increase substantially after the fixed period. Rate caps limit how much your rate can change per adjustment and over the life of the loan — always ask your lender for the cap details.</dd>
+
+        <dt><h3>Should I lock my mortgage rate now or wait for rates to drop?</h3></dt>
+        <dd>Rate timing is one of the hardest decisions in home buying, and even professional economists rarely get it right consistently. Mortgage rates are driven by inflation data, Fed policy signals, Treasury yields, and global economic conditions — all of which are difficult to predict. A general rule of thumb: if the payment at today's rate is affordable and you've found the right home, locking eliminates the risk of rates rising before your closing date. If you believe rates are likely to fall in the near term — for example, because of expected Fed rate cuts — some lenders offer float-down provisions that allow you to capture a lower rate if rates drop before closing. Most standard rate locks are 30–60 days. MortgageRate.live shows daily rate trends to help you make an informed decision, but always consult a licensed mortgage professional before locking.</dd>
+
+        <dt><h3>What is the difference between APR and interest rate on a mortgage?</h3></dt>
+        <dd>The interest rate is the annual cost of borrowing the principal loan amount, expressed as a percentage. The Annual Percentage Rate (APR) is a broader measure that includes the interest rate plus other loan costs — such as origination fees, discount points, broker fees, and certain closing costs — expressed as a yearly rate spread over the full loan term. Because APR accounts for fees, it is always equal to or higher than the stated interest rate. When comparing loan offers from different lenders, comparing APRs gives you a more apples-to-apples view of true cost. A loan with a 6.75% rate and 1.5 points in fees could easily have a higher APR than a loan at 6.90% with no points, making the lower-rate loan actually more expensive if you hold it long-term. Rates on MortgageRate.live represent advertised interest rates — always confirm the APR, fees, and closing costs directly with each lender before making a decision.</dd>
       </dl>
     </section>
 
   </main>
 
   <footer>
-    <p>Rate data sourced via AI web search. Bank rates are indicative — visit each lender for exact quotes. Not financial advice.</p>
-    <p style="margin-top:6px">© 2026 MortgageRate.live</p>
+    <p>Rate data sourced via AI web search. Rates are indicative — visit each lender for exact quotes. <a href="/disclaimer.html">Read our full disclaimer.</a></p>
+    <p style="margin-top:6px"><a href="/about.html">About TAPS Partners</a> · <a href="/disclaimer.html">Disclaimer</a> · <a href="/">Live Rates</a> · © 2026 MortgageRate.live</p>
   </footer>
 
   <script src="js/app.js?v=4"></script>

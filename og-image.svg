@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#061D4B"/>
+  <!-- Bottom accent band -->
+  <rect x="0" y="540" width="1200" height="90" fill="#0157FF" opacity="0.18"/>
+  <!-- Left accent bar -->
+  <rect x="0" y="0" width="8" height="630" fill="#0157FF"/>
+
+  <!-- Brand name -->
+  <text x="60" y="110" font-family="system-ui,-apple-system,sans-serif" font-size="54" font-weight="700" fill="#FFFFFF" letter-spacing="-1">MortgageRate.live</text>
+
+  <!-- Tagline -->
+  <text x="60" y="165" font-family="system-ui,-apple-system,sans-serif" font-size="26" fill="rgba(255,255,255,0.65)">Live US Mortgage Rates — Compare 14 Lenders Daily</text>
+
+  <!-- Rate cards -->
+  <rect x="60"  y="220" width="220" height="120" rx="12" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+  <text x="80"  y="258" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.5)" letter-spacing="1">30-YR FIXED</text>
+  <text x="80"  y="315" font-family="system-ui,sans-serif" font-size="44" font-weight="700" fill="#FFFFFF">~6.80%</text>
+
+  <rect x="310" y="220" width="220" height="120" rx="12" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+  <text x="330" y="258" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.5)" letter-spacing="1">15-YR FIXED</text>
+  <text x="330" y="315" font-family="system-ui,sans-serif" font-size="44" font-weight="700" fill="#FFFFFF">~6.10%</text>
+
+  <rect x="560" y="220" width="220" height="120" rx="12" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+  <text x="580" y="258" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.5)" letter-spacing="1">FED FUNDS</text>
+  <text x="580" y="315" font-family="system-ui,sans-serif" font-size="44" font-weight="700" fill="#FFFFFF">4.25%</text>
+
+  <!-- Lender logos text -->
+  <text x="60" y="400" font-family="system-ui,sans-serif" font-size="18" fill="rgba(255,255,255,0.45)">Chase · Wells Fargo · Bank of America · Navy Federal · PenFed · Rocket Mortgage · and more</text>
+
+  <!-- CTA button -->
+  <rect x="60" y="435" width="280" height="52" rx="8" fill="#0157FF"/>
+  <text x="200" y="468" font-family="system-ui,sans-serif" font-size="20" font-weight="600" fill="#FFFFFF" text-anchor="middle">Compare Rates Free →</text>
+
+  <!-- URL -->
+  <text x="60" y="588" font-family="system-ui,sans-serif" font-size="18" fill="rgba(255,255,255,0.35)">mortgagerate.live</text>
+</svg>
