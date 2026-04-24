@@ -15,16 +15,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Fetch rates and store in Supabase
-        run: node scripts/fetch-rates.js
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/product-launchpad/mortgage-rates/main/scripts/fetch-rates.js" -o /tmp/fetch-rates.js
+          node /tmp/fetch-rates.js
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
