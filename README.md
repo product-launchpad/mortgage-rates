@@ -1,6 +1,6 @@
 # MortgageRate.live
 
-Single-page mortgage rate tracker — live rates via Claude AI web search, persisted in Supabase, deployed on Cloudflare Pages. Optimized for Google SEO and AdSense monetization.
+Live US mortgage rate comparison tool — rates fetched daily via Claude AI web search, persisted in Supabase, deployed on Cloudflare Pages. Built by TAPS Partners as a free financial literacy resource.
 
 ---
 
@@ -8,39 +8,73 @@ Single-page mortgage rate tracker — live rates via Claude AI web search, persi
 
 ```
 mortgage-rates/
-├── index.html        ← SPA with SEO meta, JSON-LD, FAQ, AdSense slots
+├── index.html          ← Homepage: live rates, calculator, FAQ, AdSense
+├── advisor.html        ← Rate Advisor quiz (goal → loan type → credit score → lenders)
+├── about.html          ← About TAPS Partners
+├── disclaimer.html     ← Full disclaimer (informational only, no commissions)
+├── blog/
+│   ├── index.html      ← Blog listing page
+│   └── mortgage-rates-week-april-21-2026.html  ← First weekly post
 ├── css/styles.css
-├── js/app.js         ← placeholders replaced at build time
+├── js/
+│   ├── app.js          ← Main app (rates, calculator); placeholders replaced at build time
+│   └── advisor.js      ← Rate Advisor quiz logic; placeholders replaced at build time
+├── scripts/
+│   └── fetch-rates.js  ← Node.js script run by GitHub Actions cron job
+├── .github/
+│   └── workflows/
+│       └── fetch-rates.yml  ← Daily cron: fetches rates at 10 AM ET via Claude, writes to Supabase
 ├── supabase/schema.sql
+├── favicon.svg
+├── og-image.svg
 ├── robots.txt
 ├── sitemap.xml
-├── _headers          ← Cloudflare Pages security + cache headers
-├── _redirects        ← Cloudflare Pages SPA rule
-├── build.sh          ← sed-based env injection
+├── _headers            ← Cloudflare Pages security + cache headers
+├── _redirects          ← Cloudflare Pages redirect rules
+├── build.sh            ← sed-based env injection for Cloudflare build
 └── README.md
 ```
+
+---
+
+## How it works
+
+1. A **GitHub Actions cron job** runs `scripts/fetch-rates.js` every day at 10 AM ET.
+2. The script calls the Anthropic Claude API (with web search) to fetch current rates from 14 major lenders and writes them to Supabase.
+3. When a user visits the site, `app.js` reads the latest snapshot from Supabase and renders immediately — no API call needed.
+4. If the Supabase data was already fetched today (after 10 AM ET), it is served as-is. If not yet refreshed, the app falls back to the previous day's data with a warning banner.
+5. The **Refresh button** forces a fresh Claude API fetch from the browser as a manual override.
+6. If everything fails, the app shows hardcoded reference rates — never a broken UI.
+
+### Rate refresh schedule
+
+| Component | Role |
+|---|---|
+| GitHub Actions cron | Primary: fetches at 10:00 AM ET daily (14:00 UTC EDT / 15:00 UTC EST) |
+| Browser fallback | Secondary: triggers a client-side fetch if cron job missed and Supabase is stale |
+| Supabase cache | Serves all normal page loads — no API call on every visit |
 
 ---
 
 ## 1. Supabase setup
 
 1. Create a new project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run the contents of `supabase/schema.sql`.
+2. Open **SQL Editor** and run `supabase/schema.sql`.
 3. Copy your **Project URL** and **anon public key** from **Settings → API**.
-
-> **Security note:** The schema enables anon INSERT so the browser can write fresh rates.
-> For a public site, tighten this by routing inserts through a Cloudflare Worker using
-> the service role key instead.
 
 ---
 
-## 2. Anthropic API key
+## 2. GitHub Actions secrets
 
-Generate a key at [console.anthropic.com](https://console.anthropic.com).
+The daily cron job requires 3 secrets in **GitHub repo → Settings → Secrets and variables → Actions**:
 
-> **Security note:** `build.sh` bakes the key into the static JS file, making it visible
-> in the page source. This is fine for personal/low-traffic use. For a public site,
-> proxy the `/v1/messages` call through a Cloudflare Worker so the key stays server-side.
+| Secret | Value |
+|---|---|
+| `ANTHROPIC_API_KEY` | Your Anthropic API key (from [console.anthropic.com](https://console.anthropic.com)) |
+| `SUPABASE_URL` | Your Supabase project URL (e.g. `https://xxxx.supabase.co`) |
+| `SUPABASE_ANON_KEY` | Your Supabase anon public key |
+
+To test the job manually: **Actions → Fetch Daily Mortgage Rates → Run workflow**.
 
 ---
 
@@ -63,12 +97,12 @@ Add these in **Settings → Environment Variables** (Production + Preview):
 
 | Variable | Value |
 |---|---|
-| `ANTHROPIC_API_KEY` | your Anthropic key |
-| `SUPABASE_URL` | your Supabase project URL |
-| `SUPABASE_ANON_KEY` | your Supabase anon public key |
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | Your Supabase anon public key |
 
-Cloudflare injects these into the build environment. `build.sh` uses `sed` to replace
-the placeholder strings in `js/app.js` before the files are deployed.
+> `ANTHROPIC_API_KEY` is **not** needed in Cloudflare — the GitHub Actions cron handles all Claude API calls server-side. The browser no longer sends API requests on normal page loads.
+
+`build.sh` uses `sed` to replace `__SUPABASE_URL__` and `__SUPABASE_ANON_KEY__` placeholders in `app.js` and `advisor.js` at build time.
 
 ---
 
@@ -80,54 +114,34 @@ the placeholder strings in `js/app.js` before the files are deployed.
 3. Google will review the site (usually 1–7 days).
 
 ### b. Replace the publisher ID
-Once approved, replace the placeholder in two places:
+Once approved, replace the placeholder publisher ID in `index.html`, `advisor.html`, `blog/index.html`, and blog posts.
 
-**`index.html` — AdSense script tag (in `<head>`):**
-```html
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUB_ID" crossorigin="anonymous"></script>
-```
-
-**`index.html` — each `<ins>` ad unit:**
-```html
-data-ad-client="ca-pub-YOUR_PUB_ID"
-data-ad-slot="YOUR_SLOT_ID"
-```
-
-Get the slot IDs from your AdSense dashboard under **Ads → By ad unit**.
-
-### c. Ad unit placements
-| Location | Slot constant | Format |
-|---|---|---|
-| Below Fed banner | `1111111111` | Responsive leaderboard |
-| Between rates grid and calculator | `2222222222` | Responsive rectangle |
-| Above footer | `3333333333` | Responsive leaderboard |
-
-### d. Verification (site ownership)
-When AdSense asks to verify ownership, add this meta tag inside `<head>` in `index.html`:
-```html
-<meta name="google-adsense-account" content="ca-pub-YOUR_PUB_ID" />
-```
+### c. Ad unit placements (index.html)
+| Location | Format |
+|---|---|
+| Below Fed banner | Responsive leaderboard |
+| Between rates grid and calculator | Responsive rectangle |
+| Above footer | Responsive leaderboard |
 
 ---
 
-## 5. Google SEO — what's already in place
+## 5. SEO — what's in place
 
-| Feature | Implementation |
+| Feature | Detail |
 |---|---|
-| H1 heading | "Today's US Mortgage Rates" visible above fed banner |
-| H2 sections | Federal Reserve, Today's Mortgage Rates, Mortgage Calculator, FAQ |
-| Meta title + description | Keyword-rich, under 160 chars |
-| Canonical URL | `https://mortgagerate.live/` |
-| Open Graph tags | For social sharing previews |
-| Twitter Card | `summary_large_image` |
-| JSON-LD: WebSite | Site-level schema with SearchAction |
-| JSON-LD: WebPage | Page-level schema |
-| JSON-LD: FAQPage | 5 Q&As targeting mortgage keywords — eligible for Google rich results |
+| Pages | `/`, `/advisor.html`, `/about.html`, `/disclaimer.html`, `/blog/` |
+| H1 / H2 headings | Keyword-rich on all pages |
+| Meta title + description | Under 160 chars, unique per page |
+| Canonical URLs | Set on every page |
+| Open Graph + Twitter Card | With `og-image.svg` (1200×630) |
+| Favicon | `favicon.svg` (house icon) |
+| JSON-LD: WebSite + WebPage | Site and page-level schema |
+| JSON-LD: FAQPage | 10 Q&As targeting mortgage keywords |
+| JSON-LD: BlogPosting | On each blog post |
 | robots.txt | Allows all crawlers, points to sitemap |
-| sitemap.xml | Single URL, daily changefreq |
-| Semantic HTML | `<main>`, `<nav>`, `<section>`, `<footer>`, `aria-*` labels |
-| Cache headers | HTML: no-cache. CSS/JS: 1-year immutable. |
-| Preconnect hints | `cdn.jsdelivr.net`, `api.anthropic.com` |
+| sitemap.xml | All 6 URLs with lastmod and changefreq |
+| `<noscript>` rate table | Static fallback for Googlebot |
+| Google Analytics 4 | GA4 tag on all pages |
 
 ### Submit to Google Search Console
 1. Go to [search.google.com/search-console](https://search.google.com/search-console).
@@ -135,19 +149,14 @@ When AdSense asks to verify ownership, add this meta tag inside `<head>` in `ind
 3. Verify via DNS TXT record (add in Cloudflare DNS).
 4. Submit sitemap: `https://mortgagerate.live/sitemap.xml`.
 
-### OG image
-Create a `1200×630px` PNG at `og-image.png` in the root directory.
-Suggested design: rate numbers on white background with the brand name.
-
 ---
 
 ## 6. Local development
 
-Replace the placeholders directly in `js/app.js` for local testing (revert before committing):
+Replace the placeholders directly in `js/app.js` and `js/advisor.js` for local testing (revert before committing):
 
 ```js
 const CONFIG = {
-  ANTHROPIC_API_KEY: 'sk-ant-...',
   SUPABASE_URL:      'https://xxxx.supabase.co',
   SUPABASE_ANON_KEY: 'eyJ...',
 };
@@ -163,19 +172,9 @@ python3 -m http.server 8080
 
 ---
 
-## 7. Manual updates
+## 7. Manual maintenance
 
 - **FOMC date:** Update `NEXT_FOMC_DATE` at the top of `js/app.js` after each Fed meeting.
-- **Sitemap lastmod:** Update the date in `sitemap.xml` when making content changes.
-- **Fallback rates:** Update `FALLBACK_RATES` in `js/app.js` if hardcoded values become stale.
-
----
-
-## How it works
-
-1. On load, the app queries Supabase for the latest rate snapshot per source.
-2. If data is under 6 hours old, it renders immediately from the cache.
-3. If stale (or empty), it calls the Anthropic API with the `web_search` tool to fetch live rates.
-4. Fresh results are written to Supabase, then rendered.
-5. The Refresh button forces a new fetch regardless of cache age.
-6. If the API call fails, the app falls back to stale Supabase data (yellow banner) or hardcoded values (red banner) — never a broken UI.
+- **Sitemap lastmod:** Update dates in `sitemap.xml` when making content changes.
+- **Fallback rates:** Update `FALLBACK_RATES` in `js/app.js` and `js/advisor.js` if hardcoded values become stale.
+- **Blog posts:** Add new `.html` files under `blog/` and link them in `blog/index.html` and `sitemap.xml`.
