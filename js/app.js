@@ -16,6 +16,9 @@ const NEXT_FOMC_DATE = 'June 17–18, 2026';
 // If it's before 14:00 UTC right now, the window start is yesterday at 14:00 UTC.
 const DAILY_REFRESH_HOUR_UTC = 14;
 
+// Loan used for Est. Monthly column: $400k purchase, 20% down
+const REFERENCE_LOAN = 320000;
+
 // Ordered list of lenders to display — determines tile order before sort
 const DISPLAY_ORDER = [
   'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
@@ -59,15 +62,15 @@ function initSupabase() {
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
 let state = {
-  rateRows:     [],   // latest snapshot rows (all sources)
-  fedRow:       null,
-  bankRows:     [],
-  filterTerm:   'all',
-  sortMode:     'lowest',
-  calcRate:     null,
+  rateRows:      [],      // all latest snapshot rows
+  fedRow:        null,
+  bankRows:      [],      // all non-fed rows (all rate_types)
+  currentTab:    'purchase', // 'purchase' | 'refinance' | 'home_equity'
+  sortMode:      'lowest',
+  calcRate:      null,
   calcRateSource: null,
   usingFallback: false,
-  usingStale:   false,
+  usingStale:    false,
 };
 
 // ─── DATA LAYER: read from Supabase ─────────────────────────────────────────
@@ -82,12 +85,13 @@ async function fetchFromSupabase() {
     if (error) throw error;
     if (!data || data.length === 0) return null;
 
-    // distinct on source — keep most recent per source
+    // distinct on (source, rate_type, term_type) — keep most recent per combination
     const seen = new Set();
     const latest = [];
     for (const row of data) {
-      if (!seen.has(row.source)) {
-        seen.add(row.source);
+      const key = `${row.source}|${row.rate_type || 'purchase'}|${row.term_type || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
         latest.push(row);
       }
     }
@@ -107,28 +111,46 @@ async function fetchFromClaude() {
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   const prompt = `Search the web and find today's US mortgage rates as of ${today}.
+
+For EACH lender, collect SEPARATE rates for:
+1. PURCHASE loans — 30-yr fixed AND 15-yr fixed
+2. REFINANCE loans — 30-yr fixed refi AND 15-yr fixed refi
+3. HOME EQUITY — HELOC rate (if publicly listed; null if not)
+
 Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
-Format:
+Each element is one rate for one lender and one rate_type.
+Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url, raw_snippet.
+
+Example (show all entries for every lender):
 [
-  { "source": "fed", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
-  { "source": "freddie_mac", "label": "30-yr Fixed Avg", "rate": 6.30, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "freddie_mac_15", "label": "15-yr Fixed Avg", "rate": 5.65, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "chase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "wells_fargo", "label": "30-yr Fixed", "rate": 7.12, "term_type": "30yr", "bank_url": "https://www.wellsfargo.com/mortgage/rates/", "raw_snippet": "..." },
-  { "source": "bank_of_america", "label": "30-yr Fixed", "rate": 7.05, "term_type": "30yr", "bank_url": "https://www.bankofamerica.com/mortgage/mortgage-rates/", "raw_snippet": "..." },
-  { "source": "rocket_mortgage", "label": "30-yr Fixed", "rate": 7.25, "term_type": "30yr", "bank_url": "https://www.rocketmortgage.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "loan_depot", "label": "30-yr Fixed", "rate": 7.18, "term_type": "30yr", "bank_url": "https://www.loandepot.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "navy_federal", "label": "30-yr Fixed", "rate": 6.75, "term_type": "30yr", "bank_url": "https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/", "raw_snippet": "..." },
-  { "source": "pnc_bank", "label": "30-yr Fixed", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.pnc.com/en/personal-banking/borrowing/mortgage.html", "raw_snippet": "..." },
-  { "source": "us_bank", "label": "30-yr Fixed", "rate": 7.08, "term_type": "30yr", "bank_url": "https://www.usbank.com/home-loans/mortgage/mortgage-rates.html", "raw_snippet": "..." },
-  { "source": "penfed", "label": "30-yr Fixed", "rate": 6.82, "term_type": "30yr", "bank_url": "https://www.penfed.org/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "citi", "label": "30-yr Fixed", "rate": 7.02, "term_type": "30yr", "bank_url": "https://www.citi.com/mortgage/purchase-rates", "raw_snippet": "..." },
-  { "source": "truist", "label": "30-yr Fixed", "rate": 7.15, "term_type": "30yr", "bank_url": "https://www.truist.com/mortgage/current-mortgage-rates", "raw_snippet": "..." },
-  { "source": "better_mortgage", "label": "30-yr Fixed", "rate": 6.95, "term_type": "30yr", "bank_url": "https://better.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "usaa", "label": "30-yr Fixed", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.usaa.com/banking/home-mortgages/", "raw_snippet": "..." },
-  { "source": "td_bank", "label": "30-yr Fixed", "rate": 7.20, "term_type": "30yr", "bank_url": "https://www.td.com/us/en/personal-banking/mortgage", "raw_snippet": "..." }
+  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity", "raw_snippet": "..." },
+  ... (repeat purchase/refinance/home_equity rows for every lender below)
 ]
-Search today's date for each source. Use the provided bank_url as the starting point for each lender search. If a rate is not publicly available, use null and note it in raw_snippet.`;
+
+Lenders (include all entries for each):
+- chase: https://www.chase.com/personal/mortgage/mortgage-rates
+- wells_fargo: https://www.wellsfargo.com/mortgage/rates/
+- bank_of_america: https://www.bankofamerica.com/mortgage/mortgage-rates/
+- rocket_mortgage: https://www.rocketmortgage.com/mortgage-rates
+- loan_depot: https://www.loandepot.com/mortgage-rates
+- navy_federal: https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/
+- pnc_bank: https://www.pnc.com/en/personal-banking/borrowing/mortgage.html
+- us_bank: https://www.usbank.com/home-loans/mortgage/mortgage-rates.html
+- penfed: https://www.penfed.org/mortgage/mortgage-rates
+- citi: https://www.citi.com/mortgage/purchase-rates
+- truist: https://www.truist.com/mortgage/current-mortgage-rates
+- better_mortgage: https://better.com/mortgage-rates
+- usaa: https://www.usaa.com/banking/home-mortgages/
+- td_bank: https://www.td.com/us/en/personal-banking/mortgage
+
+If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
 
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 60000);
@@ -146,7 +168,7 @@ Search today's date for each source. Use the provided bank_url as the starting p
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: 8000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -198,12 +220,31 @@ async function insertToSupabase(rows) {
     label:       r.label,
     rate:        r.rate != null ? Number(r.rate) : null,
     term_type:   r.term_type || null,
+    rate_type:   r.rate_type || 'purchase',
     bank_url:    r.bank_url || null,
     raw_snippet: r.raw_snippet || null,
   }));
 
   const { error } = await supabaseClient.from('rate_snapshots').insert(insertRows);
   if (error) console.warn('Supabase insert error:', error.message);
+}
+
+// ─── DATA LAYER: historical rates for chart ──────────────────────────────────
+async function fetchHistoricalRates() {
+  if (!supabaseClient) return [];
+  try {
+    const { data, error } = await supabaseClient
+      .from('rate_snapshots')
+      .select('fetched_at, source, rate, term_type, rate_type')
+      .in('source', ['freddie_mac', 'freddie_mac_15'])
+      .not('rate', 'is', null)
+      .order('fetched_at', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  } catch (e) {
+    console.warn('Historical fetch error:', e.message);
+    return [];
+  }
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -285,17 +326,16 @@ function showSkeletonFed() {
 }
 
 function showSkeletonGrid() {
-  const grid = document.getElementById('rates-grid');
-  grid.innerHTML = Array(9).fill(0).map(() => `
-    <div class="skeleton-card">
-      <div style="display:flex;justify-content:space-between">
-        <div class="skeleton skel-line" style="width:55%"></div>
-        <div class="skeleton skel-line" style="width:20%"></div>
-      </div>
-      <div class="skeleton skel-rate"></div>
-      <div class="skeleton skel-bar" style="width:100%"></div>
-      <div class="skeleton skel-line" style="width:30%"></div>
-    </div>`).join('');
+  const tbody = document.getElementById('rates-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = Array(8).fill(0).map(() => `
+    <tr>
+      <td><div class="skeleton skel-line" style="width:120px;height:14px"></div></td>
+      <td><div class="skeleton skel-line" style="width:60px;height:14px"></div></td>
+      <td><div class="skeleton skel-line" style="width:60px;height:14px"></div></td>
+      <td class="hide-mobile"><div class="skeleton skel-line" style="width:80px;height:14px"></div></td>
+      <td></td>
+    </tr>`).join('');
 }
 
 // ─── RENDER: fed banner ──────────────────────────────────────────────────────
@@ -328,94 +368,101 @@ function renderFedBanner(fedRow, prevFedRow) {
     </div>`;
 }
 
-// ─── RENDER: bank rate cards ─────────────────────────────────────────────────
-function renderRateCards(rows) {
-  const grid = document.getElementById('rates-grid');
-  if (!rows || rows.length === 0) {
-    grid.innerHTML = '<p style="color:var(--text-muted);font-size:14px;grid-column:1/-1">No rate data available.</p>';
+// ─── RENDER: lender rate table ───────────────────────────────────────────────
+function renderRateTable(rows) {
+  const tbody = document.getElementById('rates-tbody');
+  const thead = document.getElementById('rates-thead');
+  if (!tbody) return;
+
+  const tab = state.currentTab;
+  // Rows for current tab; backwards-compat: no rate_type → treat as purchase
+  const tabRows = rows.filter(r => (r.rate_type || 'purchase') === tab);
+
+  // Pivot: source → { term_type → row }
+  const bySource = {};
+  for (const row of tabRows) {
+    if (!bySource[row.source]) bySource[row.source] = {};
+    bySource[row.source][row.term_type || '30yr'] = row;
+  }
+
+  if (tab === 'home_equity') {
+    if (thead) thead.innerHTML = `<tr>
+      <th class="col-lender">Lender</th>
+      <th>HELOC Rate</th>
+      <th class="hide-mobile">Rate Type</th>
+      <th class="col-action"></th>
+    </tr>`;
+
+    tbody.innerHTML = DISPLAY_ORDER.map(source => {
+      const row = bySource[source]?.['heloc'] || bySource[source]?.['home_equity'] || null;
+      const bankUrl = row?.bank_url || FALLBACK_RATES.find(f => f.source === source)?.bank_url || '#';
+      const rate = row?.rate;
+      return `<tr class="rate-row">
+        <td class="col-lender"><span class="lender-name">${formatSourceName(source)}</span></td>
+        <td>${rate != null ? `<strong class="rate-strong">${formatRate(rate)}</strong>` : '<span class="no-rate">—</span>'}</td>
+        <td class="hide-mobile muted-cell">${rate != null ? 'Variable (Prime-based)' : '—'}</td>
+        <td class="col-action"><a href="${bankUrl}" target="_blank" rel="noopener" class="quote-btn">Learn More ↗</a></td>
+      </tr>`;
+    }).join('');
     return;
   }
 
-  const validRates = rows.filter(r => r.rate != null).map(r => Number(r.rate));
-  const maxRate    = validRates.length ? Math.max(...validRates) : 1;
+  // Purchase or Refinance tab
+  if (thead) thead.innerHTML = `<tr>
+    <th class="col-lender">Lender</th>
+    <th class="sortable-col">30-yr Fixed</th>
+    <th>15-yr Fixed</th>
+    <th class="hide-mobile">Est. Monthly*</th>
+    <th class="col-action"></th>
+  </tr>`;
 
-  // Apply filter + sort
-  let filtered = rows;
-  if (state.filterTerm !== 'all') {
-    filtered = rows.filter(r => r.term_type === state.filterTerm);
-  }
-
+  let sources = [...DISPLAY_ORDER];
   if (state.sortMode === 'lowest') {
-    filtered = [...filtered].sort((a, b) => {
-      if (a.rate == null) return 1;
-      if (b.rate == null) return -1;
-      return Number(a.rate) - Number(b.rate);
+    sources.sort((a, b) => {
+      const ra = bySource[a]?.['30yr']?.rate ?? Infinity;
+      const rb = bySource[b]?.['30yr']?.rate ?? Infinity;
+      return ra - rb;
     });
   } else if (state.sortMode === 'highest') {
-    filtered = [...filtered].sort((a, b) => {
-      if (a.rate == null) return 1;
-      if (b.rate == null) return -1;
-      return Number(b.rate) - Number(a.rate);
+    sources.sort((a, b) => {
+      const ra = bySource[a]?.['30yr']?.rate ?? -Infinity;
+      const rb = bySource[b]?.['30yr']?.rate ?? -Infinity;
+      return rb - ra;
     });
-  } else if (state.sortMode === 'az') {
-    filtered = [...filtered].sort((a, b) =>
-      formatSourceName(a.source).localeCompare(formatSourceName(b.source)));
+  } else {
+    sources.sort((a, b) => formatSourceName(a).localeCompare(formatSourceName(b)));
   }
 
-  // Cap to display list size
-  filtered = filtered.slice(0, DISPLAY_ORDER.length);
+  tbody.innerHTML = sources.map(source => {
+    const row30 = bySource[source]?.['30yr'];
+    const row15 = bySource[source]?.['15yr'];
+    const bankUrl = row30?.bank_url || row15?.bank_url || FALLBACK_RATES.find(f => f.source === source)?.bank_url || '#';
+    const rate30 = row30?.rate;
+    const rate15 = row15?.rate;
+    const isApplied = state.calcRateSource === source && state.currentTab === tab;
 
-  grid.innerHTML = filtered.map(row => {
-    const barPct  = row.rate != null ? Math.round((Number(row.rate) / maxRate) * 100) : 0;
-    const isNatAvg = row.source === 'freddie_mac' || row.source === 'freddie_mac_15';
-    const isApplied = state.calcRateSource === row.source;
+    let estMonthly = '—';
+    if (rate30 != null) estMonthly = formatCurrency(calcMonthlyPI(REFERENCE_LOAN, Number(rate30), 360)) + '/mo';
 
-    const termBadge = row.term_type === '30yr' ? '<span class="badge badge-30yr">30-yr</span>'
-                    : row.term_type === '15yr'  ? '<span class="badge badge-15yr">15-yr</span>'
-                    : row.term_type === 'arm'   ? '<span class="badge badge-arm">ARM</span>'
-                    : '';
-    const natBadge = isNatAvg ? '<span class="badge badge-natavg">National Avg</span>' : '';
-
-    const rateDisplay = row.rate != null
-      ? `<div class="rate-value">${formatRate(row.rate)}</div>`
-      : `<div class="rate-value null-rate">— <a href="${row.bank_url || '#'}" target="_blank" rel="noopener" class="visit-link" onclick="event.stopPropagation()">Check site</a></div>`;
-
-    return `
-      <div class="rate-card ${isApplied ? 'applied' : ''}"
-           data-source="${row.source}"
-           data-rate="${row.rate != null ? row.rate : ''}"
-           data-url="${row.bank_url || '#'}">
-        <div class="card-header">
-          <div class="source-name">${formatSourceName(row.source)}</div>
-          <div class="tags">${natBadge}${termBadge}</div>
-        </div>
-        ${rateDisplay}
-        <div class="rate-bar-bg">
-          <div class="rate-bar-fill" style="width:${barPct}%"></div>
-        </div>
-        <div class="card-footer">
-          <a href="${row.bank_url || '#'}" target="_blank" rel="noopener"
-             class="visit-link" onclick="event.stopPropagation()">↗ Visit site</a>
-          <span class="applied-label">← applied</span>
-        </div>
-      </div>`;
+    return `<tr class="rate-row ${isApplied ? 'rate-row-applied' : ''}" data-source="${source}" data-rate="${rate30 ?? ''}" style="cursor:${rate30 ? 'pointer' : 'default'}">
+      <td class="col-lender"><span class="lender-name">${formatSourceName(source)}</span></td>
+      <td>${rate30 != null ? `<strong class="rate-strong">${formatRate(rate30)}</strong>` : '<span class="no-rate">—</span>'}</td>
+      <td>${rate15 != null ? formatRate(rate15) : '<span class="no-rate">—</span>'}</td>
+      <td class="hide-mobile muted-cell">${estMonthly}</td>
+      <td class="col-action"><a href="${bankUrl}" target="_blank" rel="noopener" class="quote-btn" onclick="event.stopPropagation()">Get Quote ↗</a></td>
+    </tr>`;
   }).join('');
 
-  // Attach click handlers
-  grid.querySelectorAll('.rate-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const rate = card.dataset.rate;
-      const source = card.dataset.source;
+  // Row click → prefill calculator
+  tbody.querySelectorAll('.rate-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const rate = row.dataset.rate;
+      const source = row.dataset.source;
       if (!rate) return;
-
       state.calcRate = parseFloat(rate);
       state.calcRateSource = source;
-
-      // Remove applied from all, add to clicked
-      grid.querySelectorAll('.rate-card').forEach(c => c.classList.remove('applied'));
-      card.classList.add('applied');
-
-      // Pre-fill calculator
+      tbody.querySelectorAll('.rate-row').forEach(r => r.classList.remove('rate-row-applied'));
+      row.classList.add('rate-row-applied');
       const rateInput = document.getElementById('calc-rate');
       if (rateInput) {
         rateInput.value = parseFloat(rate).toFixed(2);
@@ -423,30 +470,76 @@ function renderRateCards(rows) {
         if (hint) hint.textContent = 'From ' + formatSourceName(source);
         recalculate();
       }
-
       document.getElementById('calculator-section').scrollIntoView({ behavior: 'smooth' });
     });
   });
 }
 
-// ─── RENDER: filter + sort ───────────────────────────────────────────────────
-function setupFilterSort() {
-  document.querySelectorAll('.filter-btn').forEach(btn => {
+// ─── RENDER: historical rate trend chart ─────────────────────────────────────
+function renderHistoricalChart(data) {
+  const canvas = document.getElementById('rate-trend-chart');
+  const buildingEl = document.getElementById('chart-building');
+  if (!canvas) return;
+
+  const seen30 = new Set(), seen15 = new Set();
+  const series30 = [], series15 = [];
+
+  for (const row of data) {
+    const date = row.fetched_at.slice(0, 10);
+    const is30 = row.source === 'freddie_mac' && (row.term_type === '30yr' || !row.term_type);
+    const is15 = row.source === 'freddie_mac_15' || (row.source === 'freddie_mac' && row.term_type === '15yr');
+    if (is30 && !seen30.has(date)) { seen30.add(date); series30.push({ x: date, y: Number(row.rate) }); }
+    if (is15 && !seen15.has(date)) { seen15.add(date); series15.push({ x: date, y: Number(row.rate) }); }
+  }
+
+  if (series30.length < 2 && series15.length < 2) {
+    if (buildingEl) buildingEl.style.display = 'flex';
+    canvas.style.display = 'none';
+    return;
+  }
+  if (buildingEl) buildingEl.style.display = 'none';
+
+  const allDates = [...new Set([...series30, ...series15].map(p => p.x))].sort();
+  if (window._rateTrendChart) window._rateTrendChart.destroy();
+  window._rateTrendChart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: allDates,
+      datasets: [
+        { label: '30-yr Fixed (National Avg)', data: series30, borderColor: '#0157FF', backgroundColor: 'rgba(1,87,255,0.08)', tension: 0.3, fill: true, pointRadius: 3, pointHoverRadius: 5 },
+        { label: '15-yr Fixed (National Avg)', data: series15, borderColor: '#10B981', backgroundColor: 'transparent', tension: 0.3, fill: false, pointRadius: 3, pointHoverRadius: 5 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 12 } } },
+        tooltip: { mode: 'index', intersect: false, callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%` } },
+      },
+      scales: {
+        y: {
+          ticks: { callback: v => v.toFixed(2) + '%', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,0.06)' },
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, maxTicksLimit: 10 } },
+      },
+    },
+  });
+}
+
+// ─── RENDER: tabs + sort ─────────────────────────────────────────────────────
+function setupTabs() {
+  document.querySelectorAll('.rate-tab').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.rate-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
       btn.classList.add('active');
-      state.filterTerm = btn.dataset.filter;
-      renderRateCards(state.bankRows);
+      btn.setAttribute('aria-selected', 'true');
+      state.currentTab = btn.dataset.tab;
+      renderRateTable(state.bankRows);
     });
   });
-
   const sortSel = document.getElementById('sort-select');
-  if (sortSel) {
-    sortSel.addEventListener('change', () => {
-      state.sortMode = sortSel.value;
-      renderRateCards(state.bankRows);
-    });
-  }
+  if (sortSel) sortSel.addEventListener('change', () => { state.sortMode = sortSel.value; renderRateTable(state.bankRows); });
 }
 
 // ─── BANNER HELPERS ──────────────────────────────────────────────────────────
@@ -461,34 +554,20 @@ function hideBanners() {
 async function renderAll(rows, prevFedRow) {
   if (!rows || rows.length === 0) return;
 
-  const fedRow = rows.find(r => r.source === 'fed') || null;
-
-  // Build one tile per display source: live Supabase row if available,
-  // otherwise a placeholder (rate: null) so lenders with no cached data
-  // still appear as "—" tiles sorted to the end.
-  const rateBySource = new Map(rows.map(r => [r.source, r]));
-  const bankRows = [];
-  for (const source of DISPLAY_ORDER) {
-    if (rateBySource.has(source)) {
-      bankRows.push(rateBySource.get(source));
-    } else {
-      const fb = FALLBACK_RATES.find(f => f.source === source);
-      if (fb) bankRows.push({ source, rate: null, term_type: fb.term_type, bank_url: fb.bank_url, fetched_at: null, label: fb.label });
-    }
-  }
+  const fedRow  = rows.find(r => r.source === 'fed') || null;
+  const bankRows = rows.filter(r => r.source !== 'fed');
 
   state.fedRow  = fedRow;
   state.bankRows = bankRows;
 
   renderFedBanner(fedRow, prevFedRow);
-  renderRateCards(bankRows);
+  renderRateTable(bankRows);
+  renderNavTimestamp(rows[0]?.fetched_at || null);
 
-  const ts = rows[0]?.fetched_at || null;
-  renderNavTimestamp(ts);
-
-  // Pre-fill calculator with Freddie Mac 30yr avg if not already set
+  // Pre-fill calculator with Freddie Mac 30yr purchase rate if not already set
   if (!state.calcRate) {
-    const fm = rows.find(r => r.source === 'freddie_mac' && r.rate != null);
+    const fm = rows.find(r => r.source === 'freddie_mac' && (r.rate_type === 'purchase' || !r.rate_type) && r.term_type === '30yr' && r.rate != null)
+            || rows.find(r => r.source === 'freddie_mac' && r.rate != null);
     if (fm) {
       state.calcRate = Number(fm.rate);
       state.calcRateSource = 'freddie_mac';
@@ -699,9 +778,13 @@ function setErrorBanner(msg) {
 async function init() {
   try {
     initSupabase();
-    setupFilterSort();
+    setupTabs();
     setupCalculatorListeners();
     setupRefreshButton();
+
+    // Dynamic heading month/year
+    const headingDate = document.getElementById('heading-month-year');
+    if (headingDate) headingDate.textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     showSkeletonFed();
     showSkeletonGrid();
@@ -771,6 +854,9 @@ async function init() {
       await renderAll(fallback, null);
     } catch (_) {}
   }
+
+  // Historical chart — non-blocking, runs after main UI is ready
+  fetchHistoricalRates().then(renderHistoricalChart).catch(() => {});
 }
 
 // Kick off after DOM is ready

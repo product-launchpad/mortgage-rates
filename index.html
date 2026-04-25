@@ -175,6 +175,8 @@
 
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js for historical rate trend chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
 
@@ -182,7 +184,7 @@
   <nav id="navbar" aria-label="Site navigation">
     <a href="/" class="brand">MortgageRate.live</a>
     <div class="nav-links">
-      <a href="/" class="nav-link active">Live Rates</a>
+      <a href="/" class="nav-link active">Mortgage Rates</a>
       <a href="/advisor.html" class="nav-link">Rate Advisor</a>
       <a href="/blog/" class="nav-link">Blog</a>
     </div>
@@ -204,16 +206,54 @@
 
   <main id="main-content">
 
-    <!-- ─── PAGE HEADING (SEO H1) ───────────────────────────────────────── -->
+    <!-- ─── PAGE HEADING ───────────────────────────────────────────────── -->
     <div class="page-heading">
-      <h1>Today's US Mortgage Rates</h1>
-      <p class="page-subhead">Live rates from major lenders, updated daily via AI web search. Compare and calculate your monthly payment.</p>
+      <h1>Compare Top Mortgage Lenders of <span id="heading-month-year">2026</span></h1>
+      <p class="page-subhead">Reach out to multiple lenders to see how much you can save. It pays to compare your options.</p>
     </div>
+
+    <!-- ─── MORTGAGE TOOLS GRID ─────────────────────────────────────────── -->
+    <section class="tools-section" aria-label="Mortgage tools">
+      <div class="tools-grid">
+        <a href="#rates-section" class="tool-card">
+          <span class="tool-icon">📊</span>
+          <span class="tool-title">Mortgage Rates</span>
+          <span class="tool-desc">Compare today's rates from 14 top lenders</span>
+        </a>
+        <a href="#calculator-section" class="tool-card">
+          <span class="tool-icon">🧮</span>
+          <span class="tool-title">Payment Calculator</span>
+          <span class="tool-desc">Estimate your monthly payment instantly</span>
+        </a>
+        <a href="/advisor.html" class="tool-card">
+          <span class="tool-icon">🎯</span>
+          <span class="tool-title">Rate Advisor</span>
+          <span class="tool-desc">Get matched to lenders for your situation</span>
+        </a>
+        <a href="/blog/" class="tool-card">
+          <span class="tool-icon">📰</span>
+          <span class="tool-title">Rate Insights</span>
+          <span class="tool-desc">Weekly Fed policy analysis &amp; outlooks</span>
+        </a>
+      </div>
+    </section>
 
     <!-- ─── FED BASE RATE ────────────────────────────────────────────────── -->
     <section id="fed-section" aria-labelledby="fed-heading">
       <h2 id="fed-heading" class="section-title">Federal Reserve</h2>
       <div id="fed-banner" class="card" aria-label="Federal Funds Rate"></div>
+    </section>
+
+    <!-- ─── HISTORICAL RATE CHART ───────────────────────────────────────────── -->
+    <section id="chart-section" aria-labelledby="chart-heading">
+      <h2 id="chart-heading" class="section-title">National Average Rate Trends</h2>
+      <div class="card chart-card">
+        <div id="chart-building" class="chart-building-msg" style="display:none">
+          <span>📈</span>
+          <p>Building rate history — we accumulate one data point per day. Check back in a few days to see the trend line.</p>
+        </div>
+        <canvas id="rate-trend-chart" role="img" aria-label="Historical 30-yr and 15-yr fixed mortgage rate trends"></canvas>
+      </div>
     </section>
 
     <!-- ─── AD UNIT: Below Fed Banner (leaderboard / responsive) ─────────── -->
@@ -231,48 +271,51 @@
     <section id="rates-section" aria-labelledby="rates-heading">
       <h2 id="rates-heading" class="section-title">Today's Mortgage Rates by Lender</h2>
 
-      <!-- Filter + Sort bar -->
-      <div id="filter-bar" role="group" aria-label="Filter and sort mortgage rates">
-        <div class="filter-group">
-          <label>Filter:</label>
-          <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
-          <button class="filter-btn" data-filter="30yr" aria-pressed="false">30-yr</button>
-          <button class="filter-btn" data-filter="15yr" aria-pressed="false">15-yr</button>
-          <button class="filter-btn" data-filter="arm" aria-pressed="false">ARM</button>
+      <!-- Purchase / Refinance / Home Equity tabs -->
+      <div class="rate-tabs-bar" role="tablist" aria-label="Rate type">
+        <button class="rate-tab active" data-tab="purchase" role="tab" aria-selected="true">Purchase</button>
+        <button class="rate-tab" data-tab="refinance" role="tab" aria-selected="false">Refinance</button>
+        <button class="rate-tab" data-tab="home_equity" role="tab" aria-selected="false">Home Equity</button>
+        <div class="tabs-sort-right">
+          <select id="sort-select" class="sort-select" aria-label="Sort rates">
+            <option value="lowest">Lowest rate</option>
+            <option value="highest">Highest rate</option>
+            <option value="az">A–Z</option>
+          </select>
         </div>
-        <select id="sort-select" class="sort-select" aria-label="Sort rates">
-          <option value="lowest">Lowest rate</option>
-          <option value="highest">Highest rate</option>
-          <option value="az">A–Z</option>
-        </select>
       </div>
 
-      <div id="rates-grid" role="list" aria-label="Mortgage rate cards"></div>
+      <!-- Lender rate table -->
+      <div class="rates-table-wrap">
+        <table id="rates-table" aria-label="Mortgage rates by lender">
+          <thead id="rates-thead">
+            <tr>
+              <th class="col-lender">Lender</th>
+              <th>30-yr Fixed</th>
+              <th>15-yr Fixed</th>
+              <th class="hide-mobile">Est. Monthly*</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody id="rates-tbody"></tbody>
+        </table>
+        <p class="table-footnote">* Estimated monthly P&amp;I based on $400,000 purchase, 20% down, 30-yr term. For illustration only — does not include taxes or insurance.</p>
+      </div>
 
-      <!-- Static rate table for Googlebot / no-JS environments -->
+      <!-- Static table for Googlebot / no-JS -->
       <noscript>
         <table class="noscript-rates" aria-label="Mortgage rates by lender">
-          <thead>
-            <tr><th>Lender</th><th>Loan Type</th><th>Rate (approx.)</th></tr>
-          </thead>
+          <thead><tr><th>Lender</th><th>Purchase 30-yr</th><th>Purchase 15-yr</th><th>Refi 30-yr</th></tr></thead>
           <tbody>
-            <tr><td>Chase</td><td>30-yr Fixed</td><td>~6.90%</td></tr>
-            <tr><td>Wells Fargo</td><td>30-yr Fixed</td><td>~6.85%</td></tr>
-            <tr><td>Bank of America</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
-            <tr><td>Rocket Mortgage</td><td>30-yr Fixed</td><td>~7.00%</td></tr>
-            <tr><td>loanDepot</td><td>30-yr Fixed</td><td>~6.99%</td></tr>
-            <tr><td>Navy Federal CU</td><td>30-yr Fixed</td><td>~6.75%</td></tr>
-            <tr><td>PenFed CU</td><td>30-yr Fixed</td><td>~6.80%</td></tr>
-            <tr><td>Citi</td><td>30-yr Fixed</td><td>~6.95%</td></tr>
-            <tr><td>Truist</td><td>30-yr Fixed</td><td>~6.92%</td></tr>
-            <tr><td>Better Mortgage</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
-            <tr><td>USAA</td><td>30-yr Fixed</td><td>~6.85%</td></tr>
-            <tr><td>U.S. Bank</td><td>30-yr Fixed</td><td>~6.90%</td></tr>
-            <tr><td>PNC Bank</td><td>30-yr Fixed</td><td>~6.95%</td></tr>
-            <tr><td>TD Bank</td><td>30-yr Fixed</td><td>~6.88%</td></tr>
+            <tr><td>Chase</td><td>~6.99%</td><td>~6.25%</td><td>~7.10%</td></tr>
+            <tr><td>Wells Fargo</td><td>~6.85%</td><td>~6.15%</td><td>~6.95%</td></tr>
+            <tr><td>Bank of America</td><td>~6.88%</td><td>~6.20%</td><td>~6.98%</td></tr>
+            <tr><td>Rocket Mortgage</td><td>~7.00%</td><td>~6.30%</td><td>~7.10%</td></tr>
+            <tr><td>Navy Federal CU</td><td>~6.75%</td><td>~6.10%</td><td>~6.85%</td></tr>
+            <tr><td>PenFed CU</td><td>~6.80%</td><td>~6.12%</td><td>~6.90%</td></tr>
           </tbody>
         </table>
-        <p style="font-size:13px;color:#666;margin-top:8px">Rates are estimates — enable JavaScript for live daily rates from each lender.</p>
+        <p style="font-size:13px;color:#666;margin-top:8px">Enable JavaScript for live daily rates updated at 10 AM ET.</p>
       </noscript>
     </section>
 

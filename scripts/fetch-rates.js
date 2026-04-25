@@ -16,28 +16,46 @@ const today = new Date().toLocaleDateString('en-US', {
 });
 
 const PROMPT = `Search the web and find today's US mortgage rates as of ${today}.
+
+For EACH lender, collect SEPARATE rates for:
+1. PURCHASE loans — 30-yr fixed AND 15-yr fixed
+2. REFINANCE loans — 30-yr fixed refi AND 15-yr fixed refi
+3. HOME EQUITY — HELOC rate (if publicly listed; null if not)
+
 Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
-Format:
+Each element is one rate for one lender and one rate_type.
+Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url, raw_snippet.
+
+Example (show all entries for every lender):
 [
-  { "source": "fed",            "label": "Fed Funds Rate",   "rate": 4.33, "term_type": "fed",  "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
-  { "source": "freddie_mac",    "label": "30-yr Fixed Avg",  "rate": 6.30, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "freddie_mac_15", "label": "15-yr Fixed Avg",  "rate": 5.65, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "chase",          "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "wells_fargo",    "label": "30-yr Fixed", "rate": 7.12, "term_type": "30yr", "bank_url": "https://www.wellsfargo.com/mortgage/rates/", "raw_snippet": "..." },
-  { "source": "bank_of_america","label": "30-yr Fixed", "rate": 7.05, "term_type": "30yr", "bank_url": "https://www.bankofamerica.com/mortgage/mortgage-rates/", "raw_snippet": "..." },
-  { "source": "rocket_mortgage","label": "30-yr Fixed", "rate": 7.25, "term_type": "30yr", "bank_url": "https://www.rocketmortgage.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "loan_depot",     "label": "30-yr Fixed", "rate": 7.18, "term_type": "30yr", "bank_url": "https://www.loandepot.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "navy_federal",   "label": "30-yr Fixed", "rate": 6.75, "term_type": "30yr", "bank_url": "https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/", "raw_snippet": "..." },
-  { "source": "pnc_bank",       "label": "30-yr Fixed", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.pnc.com/en/personal-banking/borrowing/mortgage.html", "raw_snippet": "..." },
-  { "source": "us_bank",        "label": "30-yr Fixed", "rate": 7.08, "term_type": "30yr", "bank_url": "https://www.usbank.com/home-loans/mortgage/mortgage-rates.html", "raw_snippet": "..." },
-  { "source": "penfed",         "label": "30-yr Fixed", "rate": 6.82, "term_type": "30yr", "bank_url": "https://www.penfed.org/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "citi",           "label": "30-yr Fixed", "rate": 7.02, "term_type": "30yr", "bank_url": "https://www.citi.com/mortgage/purchase-rates", "raw_snippet": "..." },
-  { "source": "truist",         "label": "30-yr Fixed", "rate": 7.15, "term_type": "30yr", "bank_url": "https://www.truist.com/mortgage/current-mortgage-rates", "raw_snippet": "..." },
-  { "source": "better_mortgage","label": "30-yr Fixed", "rate": 6.95, "term_type": "30yr", "bank_url": "https://better.com/mortgage-rates", "raw_snippet": "..." },
-  { "source": "usaa",           "label": "30-yr Fixed", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.usaa.com/banking/home-mortgages/", "raw_snippet": "..." },
-  { "source": "td_bank",        "label": "30-yr Fixed", "rate": 7.20, "term_type": "30yr", "bank_url": "https://www.td.com/us/en/personal-banking/mortgage", "raw_snippet": "..." }
+  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
+  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity", "raw_snippet": "..." },
+  ... (repeat all entries for every lender below)
 ]
-Search today's date for each source. Use the provided bank_url as the starting point for each lender search. If a rate is not publicly available, use null and note it in raw_snippet.`;
+
+Lenders (include all entries for each):
+- chase: https://www.chase.com/personal/mortgage/mortgage-rates
+- wells_fargo: https://www.wellsfargo.com/mortgage/rates/
+- bank_of_america: https://www.bankofamerica.com/mortgage/mortgage-rates/
+- rocket_mortgage: https://www.rocketmortgage.com/mortgage-rates
+- loan_depot: https://www.loandepot.com/mortgage-rates
+- navy_federal: https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/
+- pnc_bank: https://www.pnc.com/en/personal-banking/borrowing/mortgage.html
+- us_bank: https://www.usbank.com/home-loans/mortgage/mortgage-rates.html
+- penfed: https://www.penfed.org/mortgage/mortgage-rates
+- citi: https://www.citi.com/mortgage/purchase-rates
+- truist: https://www.truist.com/mortgage/current-mortgage-rates
+- better_mortgage: https://better.com/mortgage-rates
+- usaa: https://www.usaa.com/banking/home-mortgages/
+- td_bank: https://www.td.com/us/en/personal-banking/mortgage
+
+If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
 
 async function fetchFromClaude() {
   console.log(`[fetch-rates] Calling Claude API for ${today}...`);
@@ -51,7 +69,7 @@ async function fetchFromClaude() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 8000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: PROMPT }],
     }),
@@ -90,6 +108,7 @@ async function insertToSupabase(rows) {
     label:       r.label,
     rate:        r.rate != null ? Number(r.rate) : null,
     term_type:   r.term_type || null,
+    rate_type:   r.rate_type || 'purchase',
     bank_url:    r.bank_url || null,
     raw_snippet: r.raw_snippet || null,
   }));

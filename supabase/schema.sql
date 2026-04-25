@@ -8,6 +8,7 @@ create table if not exists rate_snapshots (
   label        text not null,
   rate         numeric(6,3),
   term_type    text,
+  rate_type    text not null default 'purchase',  -- 'purchase' | 'refinance' | 'home_equity' | 'reference'
   bank_url     text,
   raw_snippet  text
 );
@@ -29,3 +30,8 @@ create policy "allow_anon_insert"
   on rate_snapshots for insert
   to anon
   with check (true);
+
+-- Migration: add rate_type column to existing table
+-- Run this if the table already exists:
+-- alter table public.rate_snapshots add column if not exists rate_type text not null default 'purchase';
+-- create index if not exists rate_snapshots_rate_type_idx on rate_snapshots (rate_type);
