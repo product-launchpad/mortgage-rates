@@ -119,18 +119,18 @@ For EACH lender, collect SEPARATE rates for:
 
 Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
 Each element is one rate for one lender and one rate_type.
-Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url, raw_snippet.
+Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url.
 
 Example (show all entries for every lender):
 [
-  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity", "raw_snippet": "..." },
+  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/" },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms" },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms" },
+  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity" },
   ... (repeat purchase/refinance/home_equity rows for every lender below)
 ]
 
@@ -150,7 +150,7 @@ Lenders (include all entries for each):
 - usaa: https://www.usaa.com/banking/home-mortgages/
 - td_bank: https://www.td.com/us/en/personal-banking/mortgage
 
-If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
+If a rate is unavailable, set rate to null. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
 
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 60000);
@@ -168,7 +168,7 @@ If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 8000,
+        max_tokens: 16000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{ role: 'user', content: prompt }],
       }),
@@ -184,12 +184,11 @@ If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance
 
   const data = await response.json();
 
-  // Find the last text block in the response
   let jsonText = '';
   if (data.content && Array.isArray(data.content)) {
     for (const block of data.content) {
       if (block.type === 'text' && block.text) {
-        jsonText = block.text;
+        jsonText += block.text;
       }
     }
   }
@@ -506,8 +505,8 @@ function renderHistoricalChart(data) {
     data: {
       labels: allDates,
       datasets: [
-        { label: '30-yr Fixed (National Avg)', data: series30, borderColor: '#0157FF', backgroundColor: 'rgba(1,87,255,0.08)', tension: 0.3, fill: true, pointRadius: 3, pointHoverRadius: 5 },
-        { label: '15-yr Fixed (National Avg)', data: series15, borderColor: '#10B981', backgroundColor: 'transparent', tension: 0.3, fill: false, pointRadius: 3, pointHoverRadius: 5 },
+        { label: '30-yr Fixed (National Avg)', data: series30, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', tension: 0.3, fill: true, pointRadius: 3, pointHoverRadius: 5 },
+        { label: '15-yr Fixed (National Avg)', data: series15, borderColor: '#0157FF', backgroundColor: 'transparent', tension: 0.3, fill: false, pointRadius: 3, pointHoverRadius: 5 },
       ],
     },
     options: {

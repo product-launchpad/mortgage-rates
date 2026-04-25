@@ -24,18 +24,18 @@ For EACH lender, collect SEPARATE rates for:
 
 Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
 Each element is one rate for one lender and one rate_type.
-Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url, raw_snippet.
+Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url.
 
 Example (show all entries for every lender):
 [
-  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/", "raw_snippet": "..." },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates", "raw_snippet": "..." },
-  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity", "raw_snippet": "..." },
+  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/" },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms" },
+  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms" },
+  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
+  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity" },
   ... (repeat all entries for every lender below)
 ]
 
@@ -55,7 +55,7 @@ Lenders (include all entries for each):
 - usaa: https://www.usaa.com/banking/home-mortgages/
 - td_bank: https://www.td.com/us/en/personal-banking/mortgage
 
-If a rate is unavailable, set rate to null and explain in raw_snippet. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
+If a rate is unavailable, set rate to null. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
 
 async function fetchFromClaude() {
   console.log(`[fetch-rates] Calling Claude API for ${today}...`);
@@ -69,7 +69,7 @@ async function fetchFromClaude() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
+      max_tokens: 16000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: PROMPT }],
     }),
@@ -84,7 +84,7 @@ async function fetchFromClaude() {
 
   let jsonText = '';
   for (const block of (data.content || [])) {
-    if (block.type === 'text' && block.text) jsonText = block.text;
+    if (block.type === 'text' && block.text) jsonText += block.text;
   }
   if (!jsonText) throw new Error('No text content in Claude response');
 

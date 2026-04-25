@@ -1,16 +1,16 @@
 /* ─── DESIGN TOKENS ─────────────────────────────────────────────────────── */
 :root {
-  /* Brand */
-  --navy:          #061D4B;
-  --blue-bright:   #0157FF;
-  --blue-light:    #EBF2FF;
-  --blue-mid:      #3B82F6;
-  --blue-dark:     #185FA5;
-  --blue-text:     #042C53;
+  /* Brand — white + green */
+  --navy:          #064E3B;
+  --blue-bright:   #059669;
+  --blue-light:    #ECFDF5;
+  --blue-mid:      #10B981;
+  --blue-dark:     #047857;
+  --blue-text:     #064E3B;
 
   /* Calculator segment colors — used on donut chart + breakdown rows */
-  --clr-pi:        #0157FF;
-  --clr-tax:       #10B981;
+  --clr-pi:        #059669;
+  --clr-tax:       #3B82F6;
   --clr-ins:       #F59E0B;
 
   /* Status badges */
@@ -20,7 +20,7 @@
   --amber-text:    #92400E;
 
   /* Neutrals */
-  --gray-bg:       #EEF2F7;
+  --gray-bg:       #F3F4F6;
   --gray-border:   rgba(0,0,0,0.10);
   --text-primary:  #151515;
   --text-muted:    #5A6472;
@@ -219,7 +219,7 @@ section { margin-bottom: 40px; }
 /* ─── FED BANNER CARD ────────────────────────────────────────────────────── */
 #fed-banner {
   background: var(--blue-light);
-  border: 0.5px solid rgba(55,138,221,0.25);
+  border: 0.5px solid rgba(5,150,105,0.25);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   display: flex;
@@ -244,7 +244,7 @@ section { margin-bottom: 40px; }
 #fed-banner .source-badge {
   font-size: 11px;
   font-weight: 400;
-  background: rgba(24,95,165,0.12);
+  background: rgba(4,120,87,0.12);
   color: var(--blue-dark);
   padding: 2px 7px;
   border-radius: 99px;
@@ -381,7 +381,7 @@ section { margin-bottom: 40px; }
 .rate-row td { padding: 12px 16px; border-bottom: 1px solid var(--gray-border); vertical-align: middle; }
 .rate-row:last-child td { border-bottom: none; }
 .rate-row:hover { background: var(--blue-light); }
-.rate-row-applied { background: #EBF2FF !important; }
+.rate-row-applied { background: #ECFDF5 !important; }
 
 .lender-name  { font-weight: 500; color: var(--text-primary); }
 .rate-strong  { font-size: 15px; font-weight: 700; color: var(--navy); }
@@ -448,7 +448,7 @@ section { margin-bottom: 40px; }
 
 .skeleton-fed {
   background: var(--blue-light);
-  border: 0.5px solid rgba(55,138,221,0.25);
+  border: 0.5px solid rgba(5,150,105,0.25);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   display: flex;
