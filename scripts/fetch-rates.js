@@ -15,47 +15,33 @@ const today = new Date().toLocaleDateString('en-US', {
   month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/New_York',
 });
 
-const PROMPT = `Search the web and find today's US mortgage rates as of ${today}.
+const PROMPT = `Search the web for today's US mortgage purchase rates as of ${today}.
 
-For EACH lender, collect SEPARATE rates for:
-1. PURCHASE loans — 30-yr fixed AND 15-yr fixed
-2. REFINANCE loans — 30-yr fixed refi AND 15-yr fixed refi
-3. HOME EQUITY — HELOC rate (if publicly listed; null if not)
+Return ONLY a valid JSON array. No markdown, no explanation, no code fences.
+Required fields: source, rate_type, label, rate, term_type, bank_url.
+Set rate to null if a rate is unavailable.
 
-Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
-Each element is one rate for one lender and one rate_type.
-Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url.
-
-Example (show all entries for every lender):
+Example:
 [
   { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/" },
   { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms" },
   { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms" },
   { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity" },
-  ... (repeat all entries for every lender below)
+  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" }
 ]
 
-Lenders (include all entries for each):
+Collect 30-yr fixed and 15-yr fixed purchase rates for each lender (2 rows each):
 - chase: https://www.chase.com/personal/mortgage/mortgage-rates
 - wells_fargo: https://www.wellsfargo.com/mortgage/rates/
 - bank_of_america: https://www.bankofamerica.com/mortgage/mortgage-rates/
 - rocket_mortgage: https://www.rocketmortgage.com/mortgage-rates
-- loan_depot: https://www.loandepot.com/mortgage-rates
 - navy_federal: https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/
-- pnc_bank: https://www.pnc.com/en/personal-banking/borrowing/mortgage.html
 - us_bank: https://www.usbank.com/home-loans/mortgage/mortgage-rates.html
 - penfed: https://www.penfed.org/mortgage/mortgage-rates
-- citi: https://www.citi.com/mortgage/purchase-rates
-- truist: https://www.truist.com/mortgage/current-mortgage-rates
 - better_mortgage: https://better.com/mortgage-rates
-- usaa: https://www.usaa.com/banking/home-mortgages/
-- td_bank: https://www.td.com/us/en/personal-banking/mortgage
 
-If a rate is unavailable, set rate to null. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
+Also include the Fed Funds Rate and Freddie Mac national averages (30-yr and 15-yr).
+Total output: ~19 rows.`;
 
 async function fetchFromClaude() {
   console.log(`[fetch-rates] Calling Claude API for ${today}...`);
@@ -69,7 +55,7 @@ async function fetchFromClaude() {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 16000,
+      max_tokens: 8000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: PROMPT }],
     }),

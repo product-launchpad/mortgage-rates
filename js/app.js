@@ -2,7 +2,6 @@
 // Placeholders below are replaced at build time by build.sh (Cloudflare Pages).
 // For local dev, replace the placeholder strings directly or use a local proxy.
 const CONFIG = {
-  ANTHROPIC_API_KEY: '__ANTHROPIC_API_KEY__',
   SUPABASE_URL:      '__SUPABASE_URL__',
   SUPABASE_ANON_KEY: '__SUPABASE_ANON_KEY__',
 };
@@ -22,30 +21,29 @@ const REFERENCE_LOAN = 320000;
 // Ordered list of lenders to display — determines tile order before sort
 const DISPLAY_ORDER = [
   'chase', 'wells_fargo', 'bank_of_america', 'rocket_mortgage',
-  'loan_depot', 'navy_federal', 'pnc_bank', 'us_bank',
-  'penfed', 'citi', 'truist', 'better_mortgage', 'usaa', 'td_bank',
+  'navy_federal', 'us_bank', 'penfed', 'better_mortgage',
 ];
 
 const FALLBACK_RATES = [
-  { source: 'fed',            label: 'Fed Funds Rate',   rate: 4.33, term_type: 'fed',  bank_url: 'https://www.federalreserve.gov/releases/h15/' },
-  // freddie_mac kept for calculator pre-fill reference — not shown in grid
-  { source: 'freddie_mac',    label: '30-yr Fixed Avg',  rate: 6.30, term_type: '30yr', bank_url: 'https://www.freddiemac.com/pmms' },
-  { source: 'freddie_mac_15', label: '15-yr Fixed Avg',  rate: 5.65, term_type: '15yr', bank_url: 'https://www.freddiemac.com/pmms' },
-  // displayed lenders — up to 9 tiles shown at once (sorted by rate)
-  { source: 'chase',          label: '30-yr Fixed', rate: 6.99, term_type: '30yr', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
-  { source: 'wells_fargo',    label: '30-yr Fixed', rate: 7.12, term_type: '30yr', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
-  { source: 'bank_of_america',label: '30-yr Fixed', rate: 7.05, term_type: '30yr', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
-  { source: 'rocket_mortgage',label: '30-yr Fixed', rate: 7.25, term_type: '30yr', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
-  { source: 'loan_depot',     label: '30-yr Fixed', rate: 7.18, term_type: '30yr', bank_url: 'https://www.loandepot.com/mortgage-rates' },
-  { source: 'navy_federal',   label: '30-yr Fixed', rate: 6.75, term_type: '30yr', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
-  { source: 'pnc_bank',       label: '30-yr Fixed', rate: 7.10, term_type: '30yr', bank_url: 'https://www.pnc.com/en/personal-banking/borrowing/mortgage.html' },
-  { source: 'us_bank',        label: '30-yr Fixed', rate: 7.08, term_type: '30yr', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
-  { source: 'penfed',         label: '30-yr Fixed', rate: 6.82, term_type: '30yr', bank_url: 'https://www.penfed.org/mortgage/mortgage-rates' },
-  { source: 'citi',           label: '30-yr Fixed', rate: 7.02, term_type: '30yr', bank_url: 'https://www.citi.com/mortgage/purchase-rates' },
-  { source: 'truist',         label: '30-yr Fixed', rate: 7.15, term_type: '30yr', bank_url: 'https://www.truist.com/mortgage/current-mortgage-rates' },
-  { source: 'better_mortgage',label: '30-yr Fixed', rate: 6.95, term_type: '30yr', bank_url: 'https://better.com/mortgage-rates' },
-  { source: 'usaa',           label: '30-yr Fixed', rate: 6.80, term_type: '30yr', bank_url: 'https://www.usaa.com/banking/home-mortgages/' },
-  { source: 'td_bank',        label: '30-yr Fixed', rate: 7.20, term_type: '30yr', bank_url: 'https://www.td.com/us/en/personal-banking/mortgage' },
+  { source: 'fed',            label: 'Fed Funds Rate',  rate: 4.33, term_type: 'fed',  rate_type: 'reference', bank_url: 'https://www.federalreserve.gov/releases/h15/' },
+  { source: 'freddie_mac',    label: '30-yr Fixed Avg', rate: 6.80, term_type: '30yr', rate_type: 'purchase',  bank_url: 'https://www.freddiemac.com/pmms' },
+  { source: 'freddie_mac',    label: '15-yr Fixed Avg', rate: 6.10, term_type: '15yr', rate_type: 'purchase',  bank_url: 'https://www.freddiemac.com/pmms' },
+  { source: 'chase',          label: '30-yr Fixed', rate: 6.99, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
+  { source: 'chase',          label: '15-yr Fixed', rate: 6.25, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.chase.com/personal/mortgage/mortgage-rates' },
+  { source: 'wells_fargo',    label: '30-yr Fixed', rate: 7.12, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
+  { source: 'wells_fargo',    label: '15-yr Fixed', rate: 6.45, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.wellsfargo.com/mortgage/rates/' },
+  { source: 'bank_of_america',label: '30-yr Fixed', rate: 7.05, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
+  { source: 'bank_of_america',label: '15-yr Fixed', rate: 6.38, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.bankofamerica.com/mortgage/mortgage-rates/' },
+  { source: 'rocket_mortgage',label: '30-yr Fixed', rate: 7.25, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
+  { source: 'rocket_mortgage',label: '15-yr Fixed', rate: 6.55, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.rocketmortgage.com/mortgage-rates' },
+  { source: 'navy_federal',   label: '30-yr Fixed', rate: 6.75, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
+  { source: 'navy_federal',   label: '15-yr Fixed', rate: 6.10, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/' },
+  { source: 'us_bank',        label: '30-yr Fixed', rate: 7.08, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
+  { source: 'us_bank',        label: '15-yr Fixed', rate: 6.40, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.usbank.com/home-loans/mortgage/mortgage-rates.html' },
+  { source: 'penfed',         label: '30-yr Fixed', rate: 6.82, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://www.penfed.org/mortgage/mortgage-rates' },
+  { source: 'penfed',         label: '15-yr Fixed', rate: 6.15, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://www.penfed.org/mortgage/mortgage-rates' },
+  { source: 'better_mortgage',label: '30-yr Fixed', rate: 6.95, term_type: '30yr', rate_type: 'purchase', bank_url: 'https://better.com/mortgage-rates' },
+  { source: 'better_mortgage',label: '15-yr Fixed', rate: 6.28, term_type: '15yr', rate_type: 'purchase', bank_url: 'https://better.com/mortgage-rates' },
 ];
 
 // ─── SUPABASE CLIENT ────────────────────────────────────────────────────────
@@ -102,131 +100,6 @@ async function fetchFromSupabase() {
   }
 }
 
-// ─── DATA LAYER: fetch via Claude API ───────────────────────────────────────
-async function fetchFromClaude() {
-  if (!CONFIG.ANTHROPIC_API_KEY || CONFIG.ANTHROPIC_API_KEY.startsWith('__')) {
-    throw new Error('ANTHROPIC_API_KEY not configured');
-  }
-
-  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-  const prompt = `Search the web and find today's US mortgage rates as of ${today}.
-
-For EACH lender, collect SEPARATE rates for:
-1. PURCHASE loans — 30-yr fixed AND 15-yr fixed
-2. REFINANCE loans — 30-yr fixed refi AND 15-yr fixed refi
-3. HOME EQUITY — HELOC rate (if publicly listed; null if not)
-
-Return ONLY a valid JSON array, no markdown, no explanation, no code fences.
-Each element is one rate for one lender and one rate_type.
-Required fields: source, rate_type ("purchase", "refinance", or "home_equity"), label, rate, term_type ("30yr", "15yr", or "heloc"), bank_url.
-
-Example (show all entries for every lender):
-[
-  { "source": "fed", "rate_type": "reference", "label": "Fed Funds Rate", "rate": 4.33, "term_type": "fed", "bank_url": "https://www.federalreserve.gov/releases/h15/" },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "30-yr Fixed Avg", "rate": 6.80, "term_type": "30yr", "bank_url": "https://www.freddiemac.com/pmms" },
-  { "source": "freddie_mac", "rate_type": "purchase", "label": "15-yr Fixed Avg", "rate": 6.10, "term_type": "15yr", "bank_url": "https://www.freddiemac.com/pmms" },
-  { "source": "chase", "rate_type": "purchase", "label": "30-yr Fixed", "rate": 6.99, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "purchase", "label": "15-yr Fixed", "rate": 6.25, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "refinance", "label": "30-yr Fixed Refi", "rate": 7.10, "term_type": "30yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "refinance", "label": "15-yr Fixed Refi", "rate": 6.40, "term_type": "15yr", "bank_url": "https://www.chase.com/personal/mortgage/mortgage-rates" },
-  { "source": "chase", "rate_type": "home_equity", "label": "HELOC", "rate": 8.50, "term_type": "heloc", "bank_url": "https://www.chase.com/personal/mortgage/home-equity" },
-  ... (repeat purchase/refinance/home_equity rows for every lender below)
-]
-
-Lenders (include all entries for each):
-- chase: https://www.chase.com/personal/mortgage/mortgage-rates
-- wells_fargo: https://www.wellsfargo.com/mortgage/rates/
-- bank_of_america: https://www.bankofamerica.com/mortgage/mortgage-rates/
-- rocket_mortgage: https://www.rocketmortgage.com/mortgage-rates
-- loan_depot: https://www.loandepot.com/mortgage-rates
-- navy_federal: https://www.navyfederal.org/loans-cards/mortgage/mortgage-rates/
-- pnc_bank: https://www.pnc.com/en/personal-banking/borrowing/mortgage.html
-- us_bank: https://www.usbank.com/home-loans/mortgage/mortgage-rates.html
-- penfed: https://www.penfed.org/mortgage/mortgage-rates
-- citi: https://www.citi.com/mortgage/purchase-rates
-- truist: https://www.truist.com/mortgage/current-mortgage-rates
-- better_mortgage: https://better.com/mortgage-rates
-- usaa: https://www.usaa.com/banking/home-mortgages/
-- td_bank: https://www.td.com/us/en/personal-banking/mortgage
-
-If a rate is unavailable, set rate to null. Refinance rates are typically 0.10–0.25% above purchase rates if not separately listed.`;
-
-  const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 60000);
-
-  let response;
-  try {
-    response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CONFIG.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 16000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Claude API ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-
-  let jsonText = '';
-  if (data.content && Array.isArray(data.content)) {
-    for (const block of data.content) {
-      if (block.type === 'text' && block.text) {
-        jsonText += block.text;
-      }
-    }
-  }
-
-  if (!jsonText) throw new Error('No text content in Claude response');
-
-  // Strip markdown code fences if present
-  jsonText = jsonText.replace(/```(?:json)?\s*/gi, '').replace(/```\s*/g, '').trim();
-
-  // Extract JSON array — find first [ and last ]
-  const start = jsonText.indexOf('[');
-  const end   = jsonText.lastIndexOf(']');
-  if (start === -1 || end === -1) throw new Error('No JSON array found in Claude response');
-
-  const parsed = JSON.parse(jsonText.slice(start, end + 1));
-  if (!Array.isArray(parsed)) throw new Error('Claude response is not a JSON array');
-
-  return parsed;
-}
-
-// ─── DATA LAYER: insert to Supabase ─────────────────────────────────────────
-async function insertToSupabase(rows) {
-  if (!supabaseClient) return;
-  const now = new Date().toISOString();
-  const insertRows = rows.map(r => ({
-    fetched_at:  now,
-    source:      r.source,
-    label:       r.label,
-    rate:        r.rate != null ? Number(r.rate) : null,
-    term_type:   r.term_type || null,
-    rate_type:   r.rate_type || 'purchase',
-    bank_url:    r.bank_url || null,
-    raw_snippet: r.raw_snippet || null,
-  }));
-
-  const { error } = await supabaseClient.from('rate_snapshots').insert(insertRows);
-  if (error) console.warn('Supabase insert error:', error.message);
-}
 
 // ─── DATA LAYER: historical rates for chart ──────────────────────────────────
 async function fetchHistoricalRates() {
@@ -553,14 +426,17 @@ function hideBanners() {
 async function renderAll(rows, prevFedRow) {
   if (!rows || rows.length === 0) return;
 
-  const fedRow  = rows.find(r => r.source === 'fed') || null;
-  const bankRows = rows.filter(r => r.source !== 'fed');
+  const fedRow      = rows.find(r => r.source === 'fed') || null;
+  const purchaseRows = rows.filter(r => r.source !== 'fed' && (r.rate_type === 'purchase' || !r.rate_type));
+  const refinanceRows = purchaseRows
+    .filter(r => r.rate != null)
+    .map(r => ({ ...r, rate_type: 'refinance', rate: Math.round((Number(r.rate) + 0.15) * 1000) / 1000 }));
 
   state.fedRow  = fedRow;
-  state.bankRows = bankRows;
+  state.bankRows = [...purchaseRows, ...refinanceRows];
 
   renderFedBanner(fedRow, prevFedRow);
-  renderRateTable(bankRows);
+  renderRateTable(state.bankRows);
   renderNavTimestamp(rows[0]?.fetched_at || null);
 
   // Pre-fill calculator with Freddie Mac 30yr purchase rate if not already set
@@ -738,35 +614,6 @@ function setupCalculatorListeners() {
   });
 }
 
-function setupRefreshButton() {
-  const btn = document.getElementById('refresh-btn');
-  if (!btn) return;
-  btn.addEventListener('click', async () => {
-    btn.classList.add('spinning');
-    btn.disabled = true;
-    hideBanners();
-    showSkeletonFed();
-    showSkeletonGrid();
-    try {
-      const freshRows = await fetchFromClaude();
-      await insertToSupabase(freshRows);
-      // Re-fetch from Supabase to get IDs + timestamps
-      let rows = await fetchFromSupabase();
-      if (!rows) rows = freshRows.map(r => ({ ...r, fetched_at: new Date().toISOString() }));
-      state.calcRate = null;
-      state.calcRateSource = null;
-      await renderAll(rows);
-    } catch (e) {
-      console.warn('Refresh failed:', e.message);
-      showBanner('banner-warning');
-      renderAll(state.rateRows);
-    } finally {
-      btn.classList.remove('spinning');
-      btn.disabled = false;
-    }
-  });
-}
-
 // ─── INIT ────────────────────────────────────────────────────────────────────
 function setErrorBanner(msg) {
   const el = document.getElementById('banner-error');
@@ -779,9 +626,7 @@ async function init() {
     initSupabase();
     setupTabs();
     setupCalculatorListeners();
-    setupRefreshButton();
 
-    // Dynamic heading month/year
     const headingDate = document.getElementById('heading-month-year');
     if (headingDate) headingDate.textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -792,10 +637,7 @@ async function init() {
     let rows = null;
     let prevFedRow = null;
 
-    // 1. Try Supabase
-    console.log('[MR] querying Supabase...');
     rows = await fetchFromSupabase();
-    console.log('[MR] Supabase:', rows ? rows.length + ' rows' : 'null/empty');
     state.rateRows = rows || [];
 
     if (rows && rows.length > 0) {
@@ -810,40 +652,16 @@ async function init() {
           if (prevFed && prevFed.length > 0) prevFedRow = prevFed[0];
         } catch (_) {}
       }
-    }
 
-    // 2. Check freshness
-    const latestTs = rows && rows[0]?.fetched_at;
-    const cacheHit = latestTs && !isStale(latestTs);
-    console.log('[MR] cache hit:', cacheHit);
-
-    if (cacheHit) {
+      const latestTs = rows[0]?.fetched_at;
+      if (latestTs && isStale(latestTs)) showBanner('banner-warning');
       await renderAll(rows, prevFedRow);
     } else {
-      // Stale or empty — fetch from Claude
-      try {
-        console.log('[MR] starting Claude API fetch...');
-        const freshRows = await fetchFromClaude();
-        console.log('[MR] Claude returned', freshRows.length, 'rows');
-        await insertToSupabase(freshRows);
-        const dbRows = await fetchFromSupabase();
-        rows = dbRows || freshRows.map(r => ({ ...r, fetched_at: new Date().toISOString() }));
-        state.rateRows = rows;
-        await renderAll(rows, prevFedRow);
-      } catch (e) {
-        console.error('[MR] Claude fetch failed:', e);
-        if (rows && rows.length > 0) {
-          setErrorBanner('Live fetch failed — showing last known rates. (' + e.message + ')');
-          state.usingStale = true;
-          await renderAll(rows, prevFedRow);
-        } else {
-          setErrorBanner('Could not fetch live rates (' + e.message + '). Showing reference values — visit each lender for current quotes.');
-          state.usingFallback = true;
-          const fallback = FALLBACK_RATES.map(r => ({ ...r, fetched_at: null }));
-          state.rateRows = fallback;
-          await renderAll(fallback, null);
-        }
-      }
+      // No data in DB yet — show fallback until first cron runs
+      setErrorBanner('Rates updated daily at 10 AM ET — check back soon.');
+      const fallback = FALLBACK_RATES.map(r => ({ ...r, fetched_at: null }));
+      state.rateRows = fallback;
+      await renderAll(fallback, null);
     }
   } catch (fatalErr) {
     console.error('[MR] Fatal init error:', fatalErr);

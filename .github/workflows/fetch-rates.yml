@@ -2,11 +2,7 @@ name: Fetch Daily Mortgage Rates
 
 on:
   schedule:
-    # 10:00 AM ET = 14:00 UTC (EDT, Apr–Oct) / 15:00 UTC (EST, Nov–Mar)
-    # Running at both times covers the clock change — isStale() in the app
-    # ensures only the first successful fetch per day is served to users.
-    - cron: '0 14 * * *'   # 10 AM EDT (summer)
-    - cron: '0 15 * * *'   # 10 AM EST (winter)
+    - cron: '0 15 * * *'   # 10 AM ET year-round (15:00 UTC covers both EDT and EST)
   workflow_dispatch:        # allows manual trigger from GitHub Actions UI
 
 jobs:
